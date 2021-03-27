@@ -10,7 +10,7 @@ import java.sql.Time;
 public class Visit {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int id;
+    private Long id;
     private int code;
     private Time time;
     @Enumerated(EnumType.STRING)
@@ -19,11 +19,11 @@ public class Visit {
     @JoinColumn(name = "fk_specialist")
     private Specialist specialist;
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

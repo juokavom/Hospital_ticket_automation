@@ -15,10 +15,8 @@ public class Specialist {
     private String title;
     @Column(name = "visit_minutes")
     private int timeForVisit;
-    @JsonIgnore
+//    @JsonIgnore
     private String password;
-//    @OneToMany(mappedBy = "specialist")
-//    private List<Visit> visits = new ArrayList<>();
 
     public int getId() {
         return id;
@@ -51,12 +49,4 @@ public class Specialist {
     public void setPassword(String password) {
         this.password = password;
     }
-
-//    public List<Visit> getVisits() {
-//        return visits;
-//    }
-//
-//    public void setVisits(List<Visit> visits) {
-//        this.visits = visits;
-//    }
 }
