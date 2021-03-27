@@ -23,26 +23,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
-
-    private final Logger LOG =
-            Logger.getLogger(JWTTokenGeneratorFilter.class.getName());
-
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        LOG.info("--------------------------------Called (GEN)-----------------------------------");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LOG.info("Authentification = " + authentication);
         if (null != authentication) {
             SecretKey key = Keys.hmacShaKeyFor(SecurityConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
             String jwt = Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
                     .claim("username", authentication.getName())
-                    .claim("authorities", populateAuthorities(authentication.getAuthorities()))
+                    .claim("authorities", SecurityConstants.SPECIALIST)
                     .setIssuedAt(new Date())
                     .setExpiration(new Date((new Date()).getTime() + 3000000000L))
                     .signWith(key).compact();
             response.setHeader(SecurityConstants.JWT_HEADER, jwt);
-            LOG.info("JWT generated = " + jwt);
         }
         chain.doFilter(request, response);
     }
@@ -50,13 +43,5 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return !request.getServletPath().equals(EndpointConstants.LOGIN);
-    }
-
-    private String populateAuthorities(Collection<? extends GrantedAuthority> collection) {
-        Set<String> authoritiesSet = new HashSet<>();
-        for (GrantedAuthority authority : collection) {
-            authoritiesSet.add(authority.getAuthority());
-        }
-        return String.join(",", authoritiesSet);
     }
 }

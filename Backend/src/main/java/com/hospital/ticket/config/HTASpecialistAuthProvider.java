@@ -21,10 +21,6 @@ import java.util.logging.Logger;
 
 @Component
 public class HTASpecialistAuthProvider implements AuthenticationProvider {
-
-    private final Logger LOG =
-            Logger.getLogger(HTASpecialistAuthProvider.class.getName());
-
     @Autowired
     private SpecialistRepository specialistRepository;
 
@@ -38,10 +34,7 @@ public class HTASpecialistAuthProvider implements AuthenticationProvider {
         List<Specialist> specialists = specialistRepository.findByTitle(username);
         if (specialists.size() > 0) {
             if (passwordEncoder.matches(pwd, specialists.get(0).getPassword())) {
-                ArrayList<GrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority(SecurityConstants.SPECIALIST));
-                LOG.info("Authenticated!!!!!!!!!!!!");
-                return new UsernamePasswordAuthenticationToken(username, pwd, authorities);
+                return new UsernamePasswordAuthenticationToken(username, pwd, null);
             } else {
                 throw new BadCredentialsException("Invalid password!");
             }

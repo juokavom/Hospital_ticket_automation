@@ -15,7 +15,7 @@ public class Specialist {
     private String title;
     @Column(name = "visit_minutes")
     private int timeForVisit;
-//    @JsonIgnore
+    @JsonIgnore
     private String password;
 
     public int getId() {

@@ -3,7 +3,6 @@ package com.hospital.ticket.config;
 import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.filter.JWTTokenGeneratorFilter;
 import com.hospital.ticket.filter.JWTTokenValidatorFilter;
-import com.hospital.ticket.filter.RequestValidationBeforeFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,7 +22,8 @@ import java.util.Collections;
 public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().cors().configurationSource(new CorsConfigurationSource() {
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().cors().configurationSource(new CorsConfigurationSource() {
             @Override
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration config = new CorsConfiguration();
@@ -36,7 +36,6 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 return config;
             }
         }).and().csrf().disable()
-				.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()

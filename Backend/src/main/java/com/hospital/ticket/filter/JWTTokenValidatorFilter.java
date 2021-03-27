@@ -24,14 +24,10 @@ import java.util.logging.Logger;
 
 public class JWTTokenValidatorFilter extends OncePerRequestFilter {
 
-    private final Logger LOG =
-            Logger.getLogger(JWTTokenValidatorFilter.class.getName());
-
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         String jwt = request.getHeader(SecurityConstants.JWT_HEADER);
-        LOG.info("--------------------------------Called-----------------------------------\nJWT = " + jwt);
         if (null != jwt) {
             try {
                 SecretKey key = Keys.hmacShaKeyFor(
