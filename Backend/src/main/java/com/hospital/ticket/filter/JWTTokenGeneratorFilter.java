@@ -1,6 +1,7 @@
 package com.hospital.ticket.filter;
 
 import com.hospital.ticket.constants.EndpointConstants;
+import com.hospital.ticket.constants.SecretConstants;
 import com.hospital.ticket.constants.SecurityConstants;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -28,7 +29,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null != authentication) {
-            SecretKey key = Keys.hmacShaKeyFor(SecurityConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+            SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
             String jwt = Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
                     .claim("username", authentication.getName())
                     .claim("authorities", SecurityConstants.SPECIALIST)

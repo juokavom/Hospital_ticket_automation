@@ -29,8 +29,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### Sensitive connection properties
+### Sensitive data
 /**/application.properties
+/**/SecretConstants.java
 
 ### VS Code ###
 .vscode/

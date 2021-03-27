@@ -1,5 +1,6 @@
 package com.hospital.ticket.controller;
 
+import com.hospital.ticket.constants.SecretConstants;
 import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.model.Specialist;
 import io.jsonwebtoken.Jwts;
@@ -20,7 +21,7 @@ public class CustomerController {
 
     @RequestMapping("/customerToken/{id}")
     public void generateCustomerJWTToken(@PathVariable("id") Long id, HttpServletResponse response) {
-        SecretKey key = Keys.hmacShaKeyFor(SecurityConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+        SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
         String jwt = Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
                 .claim("username", id.toString())
                 .claim("authorities", SecurityConstants.CUSTOMER)

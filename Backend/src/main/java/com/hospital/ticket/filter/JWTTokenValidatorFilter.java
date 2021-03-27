@@ -1,6 +1,7 @@
 package com.hospital.ticket.filter;
 
 import com.hospital.ticket.constants.EndpointConstants;
+import com.hospital.ticket.constants.SecretConstants;
 import com.hospital.ticket.constants.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -31,7 +32,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
         if (null != jwt) {
             try {
                 SecretKey key = Keys.hmacShaKeyFor(
-                        SecurityConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+                        SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
 
                 Claims claims = Jwts.parserBuilder()
                         .setSigningKey(key)
