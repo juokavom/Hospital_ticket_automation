@@ -39,11 +39,10 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()
+                .antMatchers("/test").permitAll() //Test api without credentials
                 .antMatchers("/spec/**").hasAuthority(SecurityConstants.SPECIALIST)
-                .antMatchers("/visit/all").permitAll()
-                .antMatchers("/ticket").permitAll()
-                .antMatchers("/login").authenticated()
-                .antMatchers("/visit/{id}").hasAnyAuthority(SecurityConstants.SPECIALIST, SecurityConstants.CUSTOMER).and().httpBasic();
+                .antMatchers("/visit/{id}").hasAnyAuthority(SecurityConstants.SPECIALIST, SecurityConstants.CUSTOMER)
+                .antMatchers("/login").authenticated().and().httpBasic();
     }
 
     @Bean

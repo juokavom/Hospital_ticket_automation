@@ -3,6 +3,7 @@ package com.hospital.ticket.filter;
 import com.hospital.ticket.constants.EndpointConstants;
 import com.hospital.ticket.constants.SecretConstants;
 import com.hospital.ticket.constants.SecurityConstants;
+import com.hospital.ticket.utils.JWTToken;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -30,23 +31,7 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         String jwt = request.getHeader(SecurityConstants.JWT_HEADER);
         if (null != jwt) {
-            try {
-                SecretKey key = Keys.hmacShaKeyFor(
-                        SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
-
-                Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(key)
-                        .build()
-                        .parseClaimsJws(jwt)
-                        .getBody();
-                String username = String.valueOf(claims.get("username"));
-                String authorities = (String) claims.get("authorities");
-                Authentication auth = new UsernamePasswordAuthenticationToken(username,null,
-                        AuthorityUtils.commaSeparatedStringToAuthorityList(authorities));
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }catch (Exception e) {
-                throw new BadCredentialsException("Invalid Token received!");
-            }
+                SecurityContextHolder.getContext().setAuthentication(JWTToken.validate(jwt));
         }
         chain.doFilter(request, response);
     }

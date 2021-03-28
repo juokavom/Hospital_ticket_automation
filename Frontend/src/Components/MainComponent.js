@@ -7,7 +7,7 @@ var sock = new SockJS('http://localhost:8080/ticket');
 let stompClient = Stomp.over(sock);
 // stompClient.debug = null;
 
-stompClient.connect({}, function () {
+stompClient.connect({'Authorization':'eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIVEEiLCJzdWIiOiJKV1QgVG9rZW4iLCJ1c2VybmFtZSI6IjEwMSIsImF1dGhvcml0aWVzIjoiQ1VTVE9NRVIiLCJpYXQiOjE2MTY5NDI4NjEsImV4cCI6MTYxOTk0Mjg2MX0.Ay6Xm2Pm9g_aFfeZkf_QzNwwZPifBLjGmsDvT4X9hLk'}, function () {
     stompClient.subscribe("/queue/update", (message) => {
         console.log('/queue/update =  ', message.body);
     });
