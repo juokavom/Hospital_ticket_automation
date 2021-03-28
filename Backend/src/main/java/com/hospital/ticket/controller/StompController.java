@@ -3,6 +3,7 @@ package com.hospital.ticket.controller;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -19,8 +20,8 @@ public class StompController {
 
     @MessageMapping("/update")
     @SendTo("/queue/update")
-    public String broadcastUpdate(@Payload String message, Principal principal) {
-        LOG.info("Principal (id) = " + principal.getName() + ", message = " + message);
+    public String broadcastUpdate(@Payload String message, Principal principal, Authentication auth) {
+        LOG.info("Principal (id) = " + principal.getName() + ", message = " + message + "authorities = " + auth.getAuthorities());
 
         return message;
     }

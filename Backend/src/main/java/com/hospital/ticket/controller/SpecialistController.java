@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
+import java.util.*;
 
 @RestController
 public class SpecialistController {
@@ -18,16 +18,16 @@ public class SpecialistController {
     @Autowired
     private VisitRepository visitRepository;
 
-    @GetMapping("spec/{id}/visits")
+    @GetMapping("/specialists")
     public @ResponseBody
-    List<Visit> getSpecialistVisits(@PathVariable("id") int id) {
-        return visitRepository.findBySpecialistId(id);
-    }
-
-    @GetMapping("spec/test/{title}")
-    public @ResponseBody
-    List<Specialist> getSpecialists(@PathVariable("title") String title) {
-        return specialistRepository.findByTitle(title);
+    List<String> getSpecialists() {
+        List<Specialist> specialists = (List<Specialist>) specialistRepository.findAll();
+        List<String> titles = new ArrayList<>();
+        specialists.forEach(spec -> {
+            titles.add(spec.getTitle());
+        });
+        Collections.sort(titles);
+        return titles;
     }
 
     @RequestMapping("/login")
@@ -35,7 +35,7 @@ public class SpecialistController {
         List<Specialist> specialists = specialistRepository.findByTitle(specialist.getName());
         if (specialists.size() > 0) {
             return specialists.get(0);
-        }else {
+        } else {
             return null;
         }
 

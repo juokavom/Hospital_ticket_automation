@@ -1,38 +1,61 @@
-import React, { Component } from 'react';
-import SockJS from 'sockjs-client';
-import Stomp from 'stompjs'; //requires dependency
-import {Button} from 'reactstrap'; //requires dependency
+import React, { useState } from 'react';
+import { Button, Label, Card, CardTitle, CardText, DropdownItem, ButtonDropdown, DropdownToggle, DropdownMenu, UncontrolledButtonDropdown, Container, Row, Col } from 'reactstrap';
+import SelectSearch from 'react-select-search';
+import { GET } from '../shared/APICalls';
 
-var sock = new SockJS('http://localhost:8080/ticket');
-let stompClient = Stomp.over(sock);
-// stompClient.debug = null;
+let specialistsList = []
+GET('/specialists').then(resp => specialistsList = resp)
 
-stompClient.connect({'Authorization':'eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIVEEiLCJzdWIiOiJKV1QgVG9rZW4iLCJ1c2VybmFtZSI6IjEwMSIsImF1dGhvcml0aWVzIjoiQ1VTVE9NRVIiLCJpYXQiOjE2MTY5NDI4NjEsImV4cCI6MTYxOTk0Mjg2MX0.Ay6Xm2Pm9g_aFfeZkf_QzNwwZPifBLjGmsDvT4X9hLk'}, function () {
-    stompClient.subscribe("/queue/update", (message) => {
-        console.log('/queue/update =  ', message.body);
-    });
-}, function (error) {
-    console.log("STOMP protocol error: " + error);
-});
+const publicIp = require('public-ip');
 
-class Main extends Component {
-    // constructor(props) {
-    //     super(props);
+(async () => {
+	console.log('My ip: ', await publicIp.v4()); //For department screens
+})();
 
-    // }
+const Main = () => {
+    const [dropdownOpen, setOpen] = useState(false);
+    const [selectedSpecialist, setSpecialist] = useState("Select a specialist");    
 
-    render() {
+    const specialists = specialistsList.map((s) => {
         return (
-            <div>
-                <h1>Lorem Ipsum</h1>
-                <Button onClick={() => stompClient.send("/app/update", {}, "HI guyz :-)")}>
-                    Send message
-                </Button>
-            </div >
+            <DropdownItem key={s} onClick={() => setSpecialist(s)}>{s}</DropdownItem>
         );
-    }
+    });
 
+    return (
+        <Container>
+            <Row className="mt-5">
+                <Col sm="12" md={{ size: 8, offset: 3 }} lg={{ size: 6, offset: 3 }}>
+                    <Card body className="text-center">
+                        <CardTitle tag="h5">Ticket generator</CardTitle>
+                        <CardText>Select a specialist and generate ticket for the visit</CardText>
+                        <Row>
+                            <Col>
+                                <UncontrolledButtonDropdown isOpen={dropdownOpen} toggle={() => setOpen(!dropdownOpen)}>
+                                    <DropdownToggle caret>{selectedSpecialist}</DropdownToggle>
+                                    <DropdownMenu>
+                                        <DropdownItem header>Specialists</DropdownItem>
+                                        {specialists}
+                                    </DropdownMenu>
+                                </UncontrolledButtonDropdown>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col className="m-3">
+                                <Button outline>Generate ticket</Button>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col className="text-left">
+                                <Button color="link">Login as specialist</Button>
+                            </Col>
+                        </Row>
+
+                    </Card>
+                </Col>
+            </Row>
+        </Container>
+    );
 
 }
 export default Main;
-// export default connect(mapStateToProps, mapDispatchToProps)(Main);
