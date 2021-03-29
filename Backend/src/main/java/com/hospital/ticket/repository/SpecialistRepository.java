@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface SpecialistRepository extends CrudRepository<Specialist, Long> {
     List<Specialist> findByTitle(String title);
-
 }

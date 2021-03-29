@@ -19,3 +19,14 @@ export const GET = async(endpoint) => {
             .then(response => response.json())
             .then(response => response)
 }
+
+export const login = async(credentials) => {
+    return fetch(baseUrl + '/login', {
+        method: 'POST',
+        body: '',
+        headers: {
+            'Authorization' : 'Basic ' + window.btoa(credentials.title + ':' + credentials.password),
+            'Content-Type': 'application/json'
+        },
+    }).then(response => response);
+}
