@@ -24,7 +24,7 @@ public class Visit {
 
     public Visit(String time, Specialist specialist){
         setId(null);
-        setCode(specialist.getTitle().substring(0, 3) + "-");
+        setCode(specialist.getTitle().substring(0, 4) + "-");
         setTime(time);
         setStatus(VisitStatus.DUE);
         setSpecialist(specialist);

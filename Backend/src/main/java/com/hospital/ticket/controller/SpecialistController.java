@@ -71,7 +71,10 @@ public class SpecialistController {
         response.setStatus(200);
         Visit newVisit = new Visit(visitTime, specialist);
         visitRepository.save(newVisit);
-        newVisit.setCode(newVisit.getCode() + newVisit.getId());
+        String preset = "";
+        if(newVisit.getId() < 10) preset = "00";
+        else if(newVisit.getId() < 100) preset = "0";
+        newVisit.setCode(newVisit.getCode() + preset + newVisit.getId());
         visitRepository.save(newVisit);
         response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
     }

@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App" >
       <CookiesProvider>
-        <Main />
+        <Main/>
       </CookiesProvider>
     </div>
   );

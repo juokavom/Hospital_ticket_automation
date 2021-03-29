@@ -49,7 +49,6 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     Authentication authentication = null;
                     String jwt = accessor.getFirstNativeHeader("Authorization");

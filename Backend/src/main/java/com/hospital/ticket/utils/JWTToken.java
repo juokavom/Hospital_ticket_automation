@@ -16,7 +16,7 @@ import java.util.Date;
 
 public class JWTToken {
     public static Authentication validate(String jwt) {
-        Authentication auth = null;
+        Authentication auth;
         try {
             SecretKey key = Keys.hmacShaKeyFor(
                     SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
@@ -37,6 +37,7 @@ public class JWTToken {
     }
     public static String generate(String username, String authorities) {
         SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+
         return Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
                 .claim("username", username)
                 .claim("authorities", authorities)

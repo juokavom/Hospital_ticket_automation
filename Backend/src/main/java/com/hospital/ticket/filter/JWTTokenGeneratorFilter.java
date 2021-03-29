@@ -30,7 +30,6 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null != authentication) {
-            SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
             response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(authentication.getName(), SecurityConstants.SPECIALIST));
         }
         chain.doFilter(request, response);
