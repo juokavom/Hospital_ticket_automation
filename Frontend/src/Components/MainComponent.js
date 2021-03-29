@@ -19,7 +19,7 @@ const Main = () => {
     const [dropdownOpen, setOpen] = useState(false);
     const [isModalOpen, setModalOpen] = useState(false);
     const [loginFailed, setLoginFailed] = useState(false);
-    const [selectedSpecialist, setSpecialist] = useState("Select a specialist");
+    const [selectedSpecialist, setSpecialist] = useState({title: "Select a specialist"});
     const [inputTitle, setInputTitle] = useState({ title: "", valid: false, invalid: false });
     const [inputPassword, setInputPassword] = useState({ password: "", valid: false, invalid: false });
     const [cookies, setCookie, removeCookie] = useCookies(['new']);
@@ -27,9 +27,13 @@ const Main = () => {
 
     const specialists = specialistsList.map((s) => {
         return (
-            <DropdownItem key={s} onClick={() => setSpecialist(s)}>{s}</DropdownItem>
+            <DropdownItem key={s.id} onClick={() => setSpecialist(s)}>{s.title}</DropdownItem>
         );
     });
+
+    const generateTicket = () => {
+        
+    }
 
     const checkFirstTimeVisitor = () => {
         let first = cookies.new;
@@ -110,7 +114,7 @@ const Main = () => {
                             <Row>
                                 <Col>
                                     <UncontrolledButtonDropdown isOpen={dropdownOpen} toggle={() => setOpen(!dropdownOpen)}>
-                                        <DropdownToggle caret>{selectedSpecialist}</DropdownToggle>
+                                        <DropdownToggle outline caret>{selectedSpecialist.title}</DropdownToggle>
                                         <DropdownMenu>
                                             <DropdownItem header>Specialists</DropdownItem>
                                             {specialists}
@@ -120,7 +124,7 @@ const Main = () => {
                             </Row>
                             <Row>
                                 <Col className="m-3">
-                                    <Button disabled={selectedSpecialist == "Select a specialist"} outline>Generate ticket</Button>
+                                    <Button disabled={selectedSpecialist.title == "Select a specialist"} onClick={generateTicket()}>Generate ticket</Button>
                                 </Col>
                             </Row>
                             <Row>

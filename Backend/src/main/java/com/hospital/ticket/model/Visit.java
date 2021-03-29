@@ -12,7 +12,7 @@ public class Visit {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private int code;
-    private Time time;
+    private String time;
     @Enumerated(EnumType.STRING)
     private VisitStatus status;
     @ManyToOne
@@ -35,11 +35,11 @@ public class Visit {
         this.code = code;
     }
 
-    public Time getTime() {
+    public String getTime() {
         return time;
     }
 
-    public void setTime(Time time) {
+    public void setTime(String time) {
         this.time = time;
     }
 

@@ -3,6 +3,7 @@ package com.hospital.ticket.filter;
 import com.hospital.ticket.constants.EndpointConstants;
 import com.hospital.ticket.constants.SecretConstants;
 import com.hospital.ticket.constants.SecurityConstants;
+import com.hospital.ticket.utils.JWTToken;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
@@ -30,13 +31,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null != authentication) {
             SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
-            String jwt = Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
-                    .claim("username", authentication.getName())
-                    .claim("authorities", SecurityConstants.SPECIALIST)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date((new Date()).getTime() + 3000000000L))
-                    .signWith(key).compact();
-            response.setHeader(SecurityConstants.JWT_HEADER, jwt);
+            response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(authentication.getName(), SecurityConstants.SPECIALIST));
         }
         chain.doFilter(request, response);
     }

@@ -1,6 +1,7 @@
 package com.hospital.ticket.utils;
 
 import com.hospital.ticket.constants.SecretConstants;
+import com.hospital.ticket.constants.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -11,6 +12,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
 public class JWTToken {
     public static Authentication validate(String jwt) {
@@ -32,5 +34,14 @@ public class JWTToken {
             throw new BadCredentialsException("Invalid Token received!");
         }
         return auth;
+    }
+    public static String generate(String username, String authorities) {
+        SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
+        return Jwts.builder().setIssuer("HTA").setSubject("JWT Token")
+                .claim("username", username)
+                .claim("authorities", authorities)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + 3000000000L))
+                .signWith(key).compact();
     }
 }
