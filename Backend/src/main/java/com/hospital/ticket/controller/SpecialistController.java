@@ -7,6 +7,7 @@ import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
 import com.hospital.ticket.utils.Utils;
+import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,10 +62,8 @@ public class SpecialistController {
             response.setStatus(404);
             return;
         }
-        List<Visit> specialistVisits = visitRepository.findBySpecialistId(specialist.getId());
-        Visit lastVisit = specialistVisits.stream().count() > 0 ?
-                specialistVisits.get((int)(specialistVisits.stream().count() - 1)) : null;
-        String visitTime = Utils.generateTime(lastVisit, specialist.getTimeForVisit());
+        String lastVisitTime = visitRepository.findLastActiveVisitTime(specialist.getId());
+        String visitTime = Utils.generateTime(lastVisitTime, specialist.getTimeForVisit());
         if(visitTime == null){
             response.setStatus(500);
             return;
