@@ -5,6 +5,7 @@ import {
     Modal, ModalHeader, ModalBody, Form, FormGroup, Input, FormFeedback, Collapse, Alert, UncontrolledAlert
 } from 'reactstrap';
 import { GET, login } from '../shared/APICalls';
+import { baseUrl } from '../shared/baseUrl';
 
 let specialistsList = []
 GET('/specialists').then(resp => specialistsList = resp)
@@ -32,7 +33,13 @@ const Main = () => {
     });
 
     const generateTicket = () => {
-        
+        fetch(baseUrl + "/visit/generate?id=" + selectedSpecialist.id)
+        .then(response => {
+            if(response.status == 200){
+                let jwt = response.headers.get("Authorization")
+                console.log('jwt from ticket = ', jwt);
+            }
+        })
     }
 
     const checkFirstTimeVisitor = () => {
@@ -124,7 +131,7 @@ const Main = () => {
                             </Row>
                             <Row>
                                 <Col className="m-3">
-                                    <Button disabled={selectedSpecialist.title == "Select a specialist"} onClick={generateTicket()}>Generate ticket</Button>
+                                    <Button disabled={selectedSpecialist.title == "Select a specialist"} onClick={generateTicket}>Generate ticket</Button>
                                 </Col>
                             </Row>
                             <Row>

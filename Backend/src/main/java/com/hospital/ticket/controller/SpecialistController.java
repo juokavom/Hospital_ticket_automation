@@ -69,8 +69,11 @@ public class SpecialistController {
             return;
         }
         response.setStatus(200);
-        LOG.info("Visit time: " + visitTime);
-        response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate("username", SecurityConstants.CUSTOMER));
+        Visit newVisit = new Visit(visitTime, specialist);
+        visitRepository.save(newVisit);
+        newVisit.setCode(newVisit.getCode() + newVisit.getId());
+        visitRepository.save(newVisit);
+        response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
     }
 
 

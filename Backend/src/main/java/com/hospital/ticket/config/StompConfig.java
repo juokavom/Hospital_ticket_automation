@@ -31,7 +31,6 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("ticket")
                 .setAllowedOriginPatterns("*")
-//                .setHandshakeHandler(new RandomUsernameHandshakeHandler())
                 .withSockJS();
     }
 
