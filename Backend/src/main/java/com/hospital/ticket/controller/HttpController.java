@@ -7,25 +7,20 @@ import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
 import com.hospital.ticket.utils.Utils;
-import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.logging.Logger;
 
 import static java.time.LocalTime.now;
 
 @RestController
-public class SpecialistController {
+public class HttpController {
     private final Logger LOG =
-            Logger.getLogger(SpecialistController.class.getName());
+            Logger.getLogger(HttpController.class.getName());
 
     @Autowired
     private SpecialistRepository specialistRepository;
@@ -77,6 +72,20 @@ public class SpecialistController {
         newVisit.setCode(newVisit.getCode() + preset + newVisit.getId());
         visitRepository.save(newVisit);
         response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
+    }
+
+    @GetMapping("/visit")
+    public Visit getVisit(Principal principal, HttpServletResponse response){
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(principal.getName()));
+        Visit visit = null;
+        if (visitOpt.isPresent()) {
+            visit = visitOpt.get();
+        } else {
+            response.setStatus(404);
+            return null;
+        }
+        response.setStatus(200);
+        return visit;
     }
 
 

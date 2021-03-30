@@ -16,6 +16,7 @@
     "react-redux-form": "^1.16.14",
     "react-scripts": "4.0.3",
     "react-select-search": "^3.0.5",
+    "react-timer-hook": "^2.0.7",
     "reactstrap": "^8.9.0",
     "redux": "^4.0.5",
     "stompjs": "^2.3.3",

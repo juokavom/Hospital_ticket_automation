@@ -4,6 +4,7 @@ import {
     Row, Col, UncontrolledAlert
 } from 'reactstrap';
 import Menu from './MenuComponent';
+import Customer from './CustomerComponent';
 
 
 // const publicIp = require('public-ip');
@@ -35,7 +36,7 @@ const Main = (props) => {
     return (
         <div>
             <div hidden={activeWindow !== "Customer"}>
-                <h1>Customer ;)</h1>
+                <Customer />
             </div>
             <div hidden={activeWindow !== "Specialist"}>
                 <h1>Specialist ;)</h1>
