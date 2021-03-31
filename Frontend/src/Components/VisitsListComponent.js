@@ -4,7 +4,6 @@ import {
 } from 'reactstrap';
 
 function VisitsList(props) {
-
     let vList = []
     if(props.visits != null){
         vList = props.visits.map(vis => {

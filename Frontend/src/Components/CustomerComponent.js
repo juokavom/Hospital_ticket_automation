@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
-import Stomp from 'stompjs'; //requires dependency
+import Stomp from 'stompjs';
 import { baseUrl } from '../shared/baseUrl';
 import Timer from './CounterComponent';
 import VisitsList from './VisitsListComponent';
 import { useAlert } from 'react-alert';
 import {
-    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Modal, ModalHeader, ModalBody, Label
+    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Modal, ModalBody, Label
 } from 'reactstrap';
 import { customerGETRequest } from '../shared/APICalls';
 
@@ -27,29 +27,20 @@ const reducer = (state, action) => {
 }
 
 function Customer(props) {
-    const [cookies, setCookie, removeCookie] = useCookies(['customer']);
+    const [cookies, , removeCookie] = useCookies(['customer']);
     const [cancelledVisit, setCancelledVisit] = useState({ id: null, affectedVisits: null });
     const alert = useAlert(null)
     const [state, dispatch] = useReducer(reducer, { visit: null, visits: null, time: { hours: 0, minutes: 0, seconds: 0 }, stomp: null });
     const [isModalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
-        console.log('my visit changed = ', state.visit)
         const time = state.visit != null ? state.visit.time.split(":") : ["00", "00"];
         dispatch({ type: "updateTime", payload: { hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 } });
     }, [state.visit])
 
     useEffect(() => {
-        console.log('visits changed: ', state.visits)
-    }, [state.visits])
-
-
-    useEffect(() => {
-        let myCancellation = false;
         if (cancelledVisit != null && cancelledVisit.id != null) {
-            console.log('cancelation, id = ', cancelledVisit.id)
             if (cancelledVisit.id === state.visit.id) {
-                myCancellation = true;
                 state.visit.status = "CANCELLED"
                 dispatch({ type: "updateVisit", payload: state.visit });                
                 dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
@@ -99,7 +90,7 @@ function Customer(props) {
                 setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
             });
         })
-        // stompClient.debug = null;
+        stompClient.debug = null;
         dispatch({ type: "updateStomp", payload: stompClient });
     }
 

@@ -35,21 +35,14 @@ public class Utils {
         return visitTime;
     }
 
-    public static List<Visit> recalculateTime(VisitRepository visitRepository, Visit visit, Logger log) {
+    public static List<Visit> recalculateTime(VisitRepository visitRepository, Visit visit) {
         List<Visit> activeVisits = visitRepository.findActiveVisitsAffectedByCancellation(
                 visit.getSpecialist().getId(), visit.getId());
-        log.info("-----------------recalculate time method----------------------");
         int reductionTime = visit.getSpecialist().getTimeForVisit();
-        log.info("reduction time = " + reductionTime);
-        log.info("-----------------before recalculation----------------------");
-        activeVisits.forEach(value -> log.info(value.toString()));
         activeVisits.forEach(value -> {
             value.setTime(recalculateNewTime(value.getTime(), reductionTime));
             visitRepository.save(value);
         });
-        log.info("-----------------after recalculation----------------------");
-        activeVisits.forEach(value -> log.info(value.toString()));
-
         return activeVisits;
     }
 

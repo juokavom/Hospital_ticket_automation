@@ -43,7 +43,7 @@ public class StompController {
             visit = visitOpt.get();
         } else return null;
         visit.setStatus(VisitStatus.CANCELLED);
-        List<Visit> activeVisits = Utils.recalculateTime(visitRepository, visit, LOG);
+        List<Visit> activeVisits = Utils.recalculateTime(visitRepository, visit);
         visitRepository.save(visit);
         return new CancelledVisit(visit.getId().toString(), activeVisits);
     }
