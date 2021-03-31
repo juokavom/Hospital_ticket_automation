@@ -7,7 +7,7 @@ import Timer from './CounterComponent';
 import VisitsList from './VisitsListComponent';
 import { useAlert } from 'react-alert';
 import {
-    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse
+    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Modal, ModalHeader, ModalBody, Label
 } from 'reactstrap';
 import { customerGETRequest } from '../shared/APICalls';
 
@@ -18,50 +18,71 @@ const reducer = (state, action) => {
             return { ...state, visit: action.payload }
         case "updateVisits":
             return { ...state, visits: action.payload }
+        case "updateTime":
+            return { ...state, time: action.payload }
+        case "updateStomp":
+            return { ...state, stomp: action.payload }
         default: return;
     }
 }
 
 function Customer(props) {
     const [cookies, setCookie, removeCookie] = useCookies(['customer']);
-    const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [stomp, setStomp] = useState(null);
-    const [cancelledVisit, setCancelledVisit] = useState(null);
+    const [cancelledVisit, setCancelledVisit] = useState({ id: null, affectedVisits: null });
     const alert = useAlert(null)
-    const [state, dispatch] = useReducer(reducer, { visit: null, visits: null });
-    const [specialist, setSpecialist] = useState(null);
+    const [state, dispatch] = useReducer(reducer, { visit: null, visits: null, time: { hours: 0, minutes: 0, seconds: 0 }, stomp: null });
+    const [isModalOpen, setModalOpen] = useState(false);
 
     useEffect(() => {
+        console.log('my visit changed = ', state.visit)
         const time = state.visit != null ? state.visit.time.split(":") : ["00", "00"];
-        setTime({ hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 })
+        dispatch({ type: "updateTime", payload: { hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 } });
     }, [state.visit])
 
     useEffect(() => {
+        console.log('visits changed: ', state.visits)
     }, [state.visits])
 
 
     useEffect(() => {
         let myCancellation = false;
-        if (cancelledVisit != null) {
-            console.log('cancelation, id = ', cancelledVisit)
-            if (cancelledVisit === state.visit.id) {
+        if (cancelledVisit != null && cancelledVisit.id != null) {
+            console.log('cancelation, id = ', cancelledVisit.id)
+            if (cancelledVisit.id === state.visit.id) {
                 myCancellation = true;
                 state.visit.status = "CANCELLED"
-                dispatch({ type: "updateVisit", payload: state.visit });
+                dispatch({ type: "updateVisit", payload: state.visit });                
+                dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
                 alert.show('Your visit was cancelled!', {
                     timeout: 3000,
                     type: 'error'
                 })
+            } else if (cancelledVisit.id < state.visit.id) {
+                for (var i = 0; i < cancelledVisit.affectedVisits.length; i++) {
+                    if (state.visit.id === cancelledVisit.affectedVisits[i].id) {
+                        state.visit.time = cancelledVisit.affectedVisits[i].time
+                    }
+                }
+                const time = state.visit.time.split(":");
+                dispatch({ type: "updateTime", payload: { hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 } });
+                dispatch({ type: "updateVisit", payload: state.visit });
+                alert.show('Other customer in front you cancelled the visit! Your time has been adjusted.', {
+                    timeout: 4000,
+                    type: 'info'
+                })
             }
             for (var i = 0; i < state.visits.length; i++) {
-                if (state.visits[i].id === cancelledVisit) {
+                for (var u = 0; u < cancelledVisit.affectedVisits.length; u++) {
+                    if (state.visits[i].id === cancelledVisit.affectedVisits[u].id) {
+                        state.visits[i].time = cancelledVisit.affectedVisits[u].time
+                        dispatch({ type: "updateVisits", payload: state.visits });
+                    }
+                }
+                if (state.visits[i].id === cancelledVisit.id) {
                     state.visits.splice(i, 1)
                     dispatch({ type: "updateVisits", payload: state.visits });
-                    if (!myCancellation) alert.show('Other customer in front you cancelled the visit! Your time has been adjusted.', {
-                        timeout: 4000,
-                        type: 'info'
-                    })
                 }
+
             }
         }
     }, [cancelledVisit])
@@ -69,17 +90,17 @@ function Customer(props) {
     const getSpecialistId = JSON.parse(localStorage.getItem('specialist')).id;
 
     const registerSTOMP = () => {
-        console.log('register, data = ', getSpecialistId);
         var sock = new SockJS(baseUrl + '/ticket');
         let stompClient = Stomp.over(sock);
 
         stompClient.connect({ 'Authorization': cookies.customer }, () => {
             stompClient.subscribe("/queue/cancel/" + getSpecialistId, (message) => {
-                setCancelledVisit(parseInt(message.body));
+                let body = JSON.parse(message.body)
+                setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
             });
         })
         // stompClient.debug = null;
-        setStomp(stompClient);
+        dispatch({ type: "updateStomp", payload: stompClient });
     }
 
     const fetchVisit = async () => {
@@ -115,7 +136,7 @@ function Customer(props) {
 
     const cncl = () => state.visit != null ? state.visit.status === "DUE" ? true : false : false
 
-    if (state.visit != null) {
+    if (state.visit != null && state.visits != null) {
         switch (state.visit.status) {
             case "ENDED", "CANCELLED":
                 return (
@@ -128,16 +149,15 @@ function Customer(props) {
                                         <Row className="m-2">
                                             <Col>
                                                 <CardText>Planned time of the visit
-                                            : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
+                                            : <strong>{state.time.hours}:{state.time.minutes < 10 ? "0" : ""}{state.time.minutes}</strong></CardText>
                                             </Col>
                                         </Row>
                                         <Row className="m-2">
                                             <Col>
                                                 <Button color="secondary" onClick={() => {
-                                                    removeCookie("customer"); 
-                                                    setStomp(stomp.disconnect());
+                                                    removeCookie("customer");
                                                     props.setWindow("Main")
-                                                    }}>Go to main page</Button>
+                                                }}>Go to main page</Button>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -150,6 +170,21 @@ function Customer(props) {
                 return (
                     <div>
                         <Container>
+                            <Modal isOpen={isModalOpen} toggle={() => setModalOpen(!isModalOpen)}>
+                                <ModalBody className="text-center">
+                                    <Label tag="h5">Are you sure you want to cancel this visit? This action cannot be undone.</Label>
+                                    <Row body className="text-center mt-4">
+                                        <Col>
+                                            <Button outline color="primary" onClick={() => setModalOpen(false)}>No, go back!</Button>
+                                        </Col>
+                                        <Col>
+                                            <Button color="danger" onClick={() => {
+                                                state.stomp.send("/app/cancel/" + getSpecialistId, {}, {});
+                                            }}>Yes, cancel!</Button>
+                                        </Col>
+                                    </Row>
+                                </ModalBody>
+                            </Modal>
                             <Row className="mt-5">
                                 <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
                                     <Card body className="text-center">
@@ -162,31 +197,39 @@ function Customer(props) {
                                         <Row className="m-2">
                                             <Col>
                                                 <CardText>Time of the visit
-                                            : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
+                                            : <strong>{state.time.hours}:{state.time.minutes < 10 ? "0" : ""}{state.time.minutes}</strong></CardText>
                                             </Col>
                                         </Row>
                                         <Row className="m-2">
                                             <Col>
-                                                <Timer time={time} />
+                                                <CardText><strong>{state.visits.length - 1}</strong> people are in line before you</CardText>
+                                            </Col>
+                                        </Row>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <Timer time={state.time} />
                                             </Col>
                                         </Row>
                                         <Row className="m-2">
                                             <Col>
                                                 <Collapse isOpen={cncl()}>
-                                                    <Button outline color="danger" onClick={() => stomp.send("/app/cancel/" + getSpecialistId, {}, {})}>Cancel visit</Button>
+                                                    <Button outline color="danger" onClick={() => setModalOpen(true)}>Cancel visit</Button>
                                                 </Collapse>
                                             </Col>
                                         </Row>
                                     </Card>
                                 </Col>
                             </Row>
-                            <VisitsList visits={state.visits} visit={state.visit} />
+                            <Row style={{ paddingBottom: '200px' }}>
+                                <Col>
+                                    <VisitsList visits={state.visits} visit={state.visit} />
+                                </Col>
+                            </Row>
                         </Container>
-                    </div>
+                    </div >
                 );
         }
     }
     return (<div></div>);
-
 }
 export default Customer;

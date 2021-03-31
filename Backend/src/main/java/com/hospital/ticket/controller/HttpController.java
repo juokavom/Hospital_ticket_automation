@@ -98,7 +98,7 @@ public class HttpController {
             response.setStatus(404);
             return null;
         }
-        List<Visit> activeVisits = visitRepository.findActiveVisits(visit.getSpecialist().getId());
+        List<Visit> activeVisits = visitRepository.findActiveVisitsBefore(visit.getSpecialist().getId(), visit.getId());
         response.setStatus(200);
         return activeVisits;
     }

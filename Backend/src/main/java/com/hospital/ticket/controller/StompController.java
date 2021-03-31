@@ -1,9 +1,11 @@
 package com.hospital.ticket.controller;
 
 import com.hospital.ticket.constants.VisitStatus;
+import com.hospital.ticket.model.CancelledVisit;
 import com.hospital.ticket.model.Visit;
 import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
+import com.hospital.ticket.utils.Utils;
 import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -34,16 +36,16 @@ public class StompController {
 
     @MessageMapping("/cancel/{id}")
     @SendTo("/queue/cancel/{id}")
-    public String cancelTicket(@Payload String message, Principal customer, Authentication auth, @DestinationVariable Long id) {
+    public CancelledVisit cancelTicket(@Payload String message, Principal customer, Authentication auth, @DestinationVariable Long id) {
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(customer.getName()));
         Visit visit = null;
         if (visitOpt.isPresent()) {
             visit = visitOpt.get();
-        } else return "";
+        } else return null;
         visit.setStatus(VisitStatus.CANCELLED);
-        //TODO recalculate times for other visits, affected by this cancellation
+        List<Visit> activeVisits = Utils.recalculateTime(visitRepository, visit, LOG);
         visitRepository.save(visit);
-        return visit.getId().toString();
+        return new CancelledVisit(visit.getId().toString(), activeVisits);
     }
 
     @EventListener

@@ -25,7 +25,7 @@ const Main = (props) => {
         } else {
             setWindow("Main")
         }
-    }, [cookies]);
+    }, [cookies.customer, cookies.specialist]);
 
     const checkFirstTimeVisitor = () => {
         let first = cookies.new;

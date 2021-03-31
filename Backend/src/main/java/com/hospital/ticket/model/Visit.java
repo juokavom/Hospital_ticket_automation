@@ -69,4 +69,15 @@ public class Visit {
     public void setSpecialist(Specialist specialist) {
         this.specialist = specialist;
     }
+
+    @Override
+    public String toString() {
+        return "Visit{" +
+                "id=" + id +
+                ", code='" + code + '\'' +
+                ", time='" + time + '\'' +
+                ", status=" + status +
+                ", specialist=" + specialist +
+                '}';
+    }
 }
