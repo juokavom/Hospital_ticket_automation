@@ -30,7 +30,9 @@ const Menu = (props) => {
         fetch(baseUrl + "/visit/generate?id=" + selectedSpecialist.id)
             .then(response => {
                 if (response.status === 200) {
-                    setCookie('customer', response.headers.get("Authorization"))
+                    // props.selectedSpecialist(selectedSpecialist)
+                    localStorage.setItem('specialist', JSON.stringify(selectedSpecialist));
+                    setCookie('customer', response.headers.get("Authorization"));
                     unsetCookie('specialist')
                 }
             })
@@ -41,11 +43,11 @@ const Menu = (props) => {
             if (response.status !== 200) {
                 setLoginFailed(true)
             } else {
-                setOpen(false);
-                setModalOpen(false);
-                setLoginFailed(false);
-                setInputTitle({ title: "", valid: false, invalid: false });
-                setInputPassword({ password: "", valid: false, invalid: false });
+                // setOpen(false);
+                // setModalOpen(false);
+                // setLoginFailed(false);
+                // setInputTitle({ title: "", valid: false, invalid: false });
+                // setInputPassword({ password: "", valid: false, invalid: false });
                 setCookie('specialist', response.headers.get("Authorization"))
                 unsetCookie('customer')
             }

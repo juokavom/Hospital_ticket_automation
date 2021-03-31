@@ -22,13 +22,14 @@ const reducer = (state, action) => {
     }
 }
 
-function Customer() {
-    const [cookies] = useCookies(['customer']);
+function Customer(props) {
+    const [cookies, setCookie, removeCookie] = useCookies(['customer']);
     const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
     const [stomp, setStomp] = useState(null);
     const [cancelledVisit, setCancelledVisit] = useState(null);
     const alert = useAlert(null)
     const [state, dispatch] = useReducer(reducer, { visit: null, visits: null });
+    const [specialist, setSpecialist] = useState(null);
 
     useEffect(() => {
         const time = state.visit != null ? state.visit.time.split(":") : ["00", "00"];
@@ -42,6 +43,7 @@ function Customer() {
     useEffect(() => {
         let myCancellation = false;
         if (cancelledVisit != null) {
+            console.log('cancelation, id = ', cancelledVisit)
             if (cancelledVisit === state.visit.id) {
                 myCancellation = true;
                 state.visit.status = "CANCELLED"
@@ -55,7 +57,7 @@ function Customer() {
                 if (state.visits[i].id === cancelledVisit) {
                     state.visits.splice(i, 1)
                     dispatch({ type: "updateVisits", payload: state.visits });
-                    if(!myCancellation) alert.show('Other customer in front you cancelled the visit! Your time has been adjusted.', {
+                    if (!myCancellation) alert.show('Other customer in front you cancelled the visit! Your time has been adjusted.', {
                         timeout: 4000,
                         type: 'info'
                     })
@@ -64,16 +66,19 @@ function Customer() {
         }
     }, [cancelledVisit])
 
+    const getSpecialistId = JSON.parse(localStorage.getItem('specialist')).id;
+
     const registerSTOMP = () => {
+        console.log('register, data = ', getSpecialistId);
         var sock = new SockJS(baseUrl + '/ticket');
         let stompClient = Stomp.over(sock);
 
         stompClient.connect({ 'Authorization': cookies.customer }, () => {
-            stompClient.subscribe("/queue/cancel", (message) => {
+            stompClient.subscribe("/queue/cancel/" + getSpecialistId, (message) => {
                 setCancelledVisit(parseInt(message.body));
             });
         })
-        stompClient.debug = null;
+        // stompClient.debug = null;
         setStomp(stompClient);
     }
 
@@ -110,42 +115,78 @@ function Customer() {
 
     const cncl = () => state.visit != null ? state.visit.status === "DUE" ? true : false : false
 
-    return (
-        <div>
-            <Container>
-                <Row className="mt-5">
-                    <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
-                        <Card body className="text-center">
-                            <CardTitle tag="h3"><em>{state.visit != null ? state.visit.specialist.title : ""}</em> visit queue</CardTitle>
-                            <Row className="m-2">
-                                <Col>
-                                    <CardText tag="h5">Your visit code: <strong>{state.visit != null ? state.visit.code : ""}</strong></CardText>
+    if (state.visit != null) {
+        switch (state.visit.status) {
+            case "ENDED", "CANCELLED":
+                return (
+                    <div>
+                        <Container>
+                            <Row className="mt-5">
+                                <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
+                                    <Card body className="text-center">
+                                        <CardTitle tag="h3">Your visit for <em>{state.visit.specialist.title} was {state.visit.status}</em></CardTitle>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <CardText>Planned time of the visit
+                                            : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
+                                            </Col>
+                                        </Row>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <Button color="secondary" onClick={() => {
+                                                    removeCookie("customer"); 
+                                                    setStomp(stomp.disconnect());
+                                                    props.setWindow("Main")
+                                                    }}>Go to main page</Button>
+                                            </Col>
+                                        </Row>
+                                    </Card>
                                 </Col>
                             </Row>
-                            <Row className="m-2">
-                                <Col>
-                                    <CardText>Time for your visit
-                                : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
+                        </Container>
+                    </div>
+                );
+            default:
+                return (
+                    <div>
+                        <Container>
+                            <Row className="mt-5">
+                                <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
+                                    <Card body className="text-center">
+                                        <CardTitle tag="h3"><em>{state.visit.specialist.title}</em> visit queue</CardTitle>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <CardText tag="h5">Your visit code: <strong>{state.visit.code}</strong></CardText>
+                                            </Col>
+                                        </Row>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <CardText>Time of the visit
+                                            : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
+                                            </Col>
+                                        </Row>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <Timer time={time} />
+                                            </Col>
+                                        </Row>
+                                        <Row className="m-2">
+                                            <Col>
+                                                <Collapse isOpen={cncl()}>
+                                                    <Button outline color="danger" onClick={() => stomp.send("/app/cancel/" + getSpecialistId, {}, {})}>Cancel visit</Button>
+                                                </Collapse>
+                                            </Col>
+                                        </Row>
+                                    </Card>
                                 </Col>
                             </Row>
-                            <Row className="m-2">
-                                <Col>
-                                    <Timer time={time} />
-                                </Col>
-                            </Row>
-                            <Row className="m-2">
-                                <Col>
-                                    <Collapse isOpen={cncl()}>
-                                        <Button outline color="danger" onClick={() => stomp.send("/app/cancel", {}, {})}>Cancel visit</Button>
-                                    </Collapse>
-                                </Col>
-                            </Row>
-                        </Card>
-                    </Col>
-                </Row>
-                <VisitsList visits={state.visits} visit={state.visit} />
-            </Container>
-        </div>
-    );
+                            <VisitsList visits={state.visits} visit={state.visit} />
+                        </Container>
+                    </div>
+                );
+        }
+    }
+    return (<div></div>);
+
 }
 export default Customer;

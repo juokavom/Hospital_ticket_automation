@@ -18,6 +18,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import javax.management.DescriptorKey;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -31,9 +32,9 @@ public class StompController {
     @Autowired
     private VisitRepository visitRepository;
 
-    @MessageMapping("/cancel")
-    @SendTo("/queue/cancel")
-    public String cancelTicket(@Payload String message, Principal customer, Authentication auth) {
+    @MessageMapping("/cancel/{id}")
+    @SendTo("/queue/cancel/{id}")
+    public String cancelTicket(@Payload String message, Principal customer, Authentication auth, @DestinationVariable Long id) {
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(customer.getName()));
         Visit visit = null;
         if (visitOpt.isPresent()) {

@@ -36,14 +36,14 @@ const Main = (props) => {
     if (activeWindow === "Customer") {
         return (
             <div>
-                <Customer />
+                <Customer setWindow={(win) => setWindow(win)}/>
             </div>
         );
     }
     else if (activeWindow === "Main") {
         return (
             <div>
-               <Menu />
+                <Menu />
                 <div hidden={checkFirstTimeVisitor()}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
@@ -58,9 +58,7 @@ const Main = (props) => {
     }
     else return (
         <div>
-            <div hidden={activeWindow !== "Specialist"}>
-                <h1>Specialist ;)</h1>
-            </div>
+            <h1>Specialist ;)</h1>
         </div >
     );
 
