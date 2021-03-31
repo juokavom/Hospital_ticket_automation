@@ -59,8 +59,12 @@ class Timer extends React.Component {
     if (this.state.time != null) {
       return (
         <div>
-          <label>Time left</label>
-          {this.state.time.hours} hrs {this.state.time.minutes} min {this.state.time.seconds} sec
+          <div>
+            <label>Time left</label>
+          </div>
+          <div>
+            {this.state.time.hours} hrs {this.state.time.minutes} min {this.state.time.seconds} sec
+        </div>
         </div>
       );
     }

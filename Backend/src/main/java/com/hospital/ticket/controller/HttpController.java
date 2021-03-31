@@ -88,5 +88,20 @@ public class HttpController {
         return visit;
     }
 
+    @GetMapping("/visit/all")
+    public List<Visit> getVisits(Principal principal, HttpServletResponse response){
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(principal.getName()));
+        Visit visit = null;
+        if (visitOpt.isPresent()) {
+            visit = visitOpt.get();
+        } else {
+            response.setStatus(404);
+            return null;
+        }
+        List<Visit> activeVisits = visitRepository.findActiveVisits(visit.getSpecialist().getId());
+        response.setStatus(200);
+        return activeVisits;
+    }
+
 
 }

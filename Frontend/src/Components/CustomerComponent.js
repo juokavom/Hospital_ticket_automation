@@ -1,95 +1,153 @@
-import React, { Component, useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs'; //requires dependency
 import { baseUrl } from '../shared/baseUrl';
 import Timer from './CounterComponent';
-import { useTimer } from 'react-timer-hook';
+import VisitsList from './VisitsListComponent';
+import { useAlert, withAlert } from 'react-alert';
 import {
-    Button, Card, CardTitle, CardText, DropdownItem, DropdownToggle, DropdownMenu, UncontrolledButtonDropdown, Container, Row, Col,
-    Modal, ModalHeader, ModalBody, Form, FormGroup, Input, FormFeedback, Collapse, Alert, Label
+    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse
 } from 'reactstrap';
+import { customerGETRequest } from '../shared/APICalls';
 
-// var sock = new SockJS(baseUrl + '/ticket');
-// let stompClient = Stomp.over(sock);
-// // stompClient.debug = null;
-
-// stompClient.connect({ 'Authorization': 'eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJIVEEiLCJzdWIiOiJKV1QgVG9rZW4iLCJ1c2VybmFtZSI6IjEwMSIsImF1dGhvcml0aWVzIjoiQ1VTVE9NRVIiLCJpYXQiOjE2MTY5NDI4NjEsImV4cCI6MTYxOTk0Mjg2MX0.Ay6Xm2Pm9g_aFfeZkf_QzNwwZPifBLjGmsDvT4X9hLk' }, function () {
-//     stompClient.subscribe("/queue/update", (message) => {
-//         console.log('/queue/update =  ', message.body);
-//     });
-// }, function (error) {
-//     console.log("STOMP protocol error: " + error);
-// });
-
-/* <Button onClick={() => stompClient.send("/app/update", {}, "HI guyz :-)")}>
-    Send message
-    </Button> */
-
-
-
+// stompClient.debug = null;
 
 function Customer(props) {
-    const [cookies, setCookie] = useCookies(['customer']);
+    const [cookies] = useCookies(['customer']);
     const [visit, setVisit] = useState(null);
+    const [visits, setVisits] = useState(null);
     const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const [canCancel, setCanCancel] = useState(true);
+    const [stomp, setStomp] = useState(null);
+    const [cancelledVisit, setCancelledVisit] = useState(null);
+    const alert = useAlert(null)
+    const [state, dispatch] = useReducer(reducer, { visits: null });
 
     useEffect(() => {
-        setTime({ hours: 19, minutes: 0, seconds: 0 })
-        console.log(visit)
+        const time = visit != null ? visit.time.split(":") : ["00", "00"];
+        setTime({ hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 })
+        setCanCancel(visit != null ? visit.status === "DUE" ? true : false : false)
     }, [visit])
 
-    // useEffect(() => {        
+    useEffect(() => {
+        console.log('visits updated = ', state.visits)
+    }, [state])
 
-    // }, [time])
+
+    function reducer(state, action) {
+        switch (action.type) {
+            case "set":
+                return { visits: action.payload }
+            case "add":
+                return { ...state, visits: action.payload }
+        }
+    }
 
     useEffect(() => {
-        if (cookies.customer !== undefined) {
-            return fetch(baseUrl + "/visit", {
-                method: 'GET',
-                headers: {
-                    'Authorization': cookies.customer,
-                    'Content-Type': 'application/json'
-                },
-            })
-                .then(response => {
-                    if (response.status === 200) {
-                        return response;
-                    }
+        if (cancelledVisit != null) {
+            if (cancelledVisit === visit.id) {
+                visit.status = "CANCELLED"
+                setVisit(state => visit)
+                // setCanCancel(false)
+                alert.show('Your visit was cancelled!', {
+                    timeout: 3000,
+                    type: 'error'
                 })
-                .then(response => response.json())
-                .then(response => {
-                    setVisit(response)
-                })
+            }
+            console.log('Will remove from list if found')
+            for (var i = 0; i < state.visits.length; i++) {
+                if (state.visits[i].id === cancelledVisit) {
+                    console.log('found, removimg ...', state.visits[i])
+                    let stateTemp = state.visits
+                    stateTemp.splice(i, 1)
+                    dispatch({ type: "add", payload: stateTemp });
+                }
+            }
+            console.log('list after removing = ', state.visits)
         }
-    }, [cookies]);
+    }, [cancelledVisit])
+
+    const registerSTOMP = () => {
+        var sock = new SockJS(baseUrl + '/ticket');
+        let stompClient = Stomp.over(sock);
+
+        stompClient.connect({ 'Authorization': cookies.customer }, () => {
+            stompClient.subscribe("/queue/cancel", (message) => {
+                setCancelledVisit(parseInt(message.body));
+            });
+        })
+        setStomp(stompClient);
+    }
+
+    const fetchVisit = () => {
+        return customerGETRequest("/visit", cookies.customer)
+            .then(response => {
+                if (response.status === 200) {
+                    return response;
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                setVisit(response)
+            })
+    }
+
+    const fetchVisits = () => {
+        return customerGETRequest("/visit/all", cookies.customer)
+            .then(response => {
+                if (response.status === 200) {
+                    return response;
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                // setVisits(response)                
+                dispatch({ type: "set", payload: response });
+            })
+    }
+
+    useEffect(() => {
+        return (fetchVisit(), fetchVisits(), registerSTOMP())
+    }, [])
+
 
     return (
-        <Container>
-            <Row className="mt-5">
-                <Col sm="16" md={{ size: 12, offset: 0 }} lg={{ size: 10, offset: 1 }}>
-                    <Card body className="text-center">
-                        <CardTitle tag="h3"><em>{visit != null? visit.specialist.title:""}</em> visit queue</CardTitle>
-                        <Row className="m-2">
-                            <Col>
-                                <CardText tag="h5">Your visit code: <strong>{visit != null? visit.code:""}</strong></CardText>
-                            </Col>
-                        </Row>
-                        <Row className="m-2">
-                            <Col>
-                                <CardText>Time for your visit
+        <div>
+            <Container>
+                <Row className="mt-5">
+                    <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
+                        <Card body className="text-center">
+                            <CardTitle tag="h3"><em>{visit != null ? visit.specialist.title : ""}</em> visit queue</CardTitle>
+                            <Row className="m-2">
+                                <Col>
+                                    <CardText tag="h5">Your visit code: <strong>{visit != null ? visit.code : ""}</strong></CardText>
+                                </Col>
+                            </Row>
+                            <Row className="m-2">
+                                <Col>
+                                    <CardText>Time for your visit
                                 : <strong>{time.hours}:{time.minutes < 10 ? "0" : ""}{time.minutes}</strong></CardText>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col>
-                                <Timer time={time} />
-                            </Col>
-                        </Row>
-                    </Card>
-                </Col>
-            </Row>
-        </Container>
+                                </Col>
+                            </Row>
+                            <Row className="m-2">
+                                <Col>
+                                    <Timer time={time} />
+                                </Col>
+                            </Row>
+                            <Row className="m-2">
+                                <Col>
+                                    <Collapse isOpen={canCancel}>
+                                        <Button outline color="danger" onClick={() => stomp.send("/app/cancel", {}, {})}>Cancel visit</Button>
+                                    </Collapse>
+                                </Col>
+                            </Row>
+                        </Card>
+                    </Col>
+                </Row>
+                <VisitsList visits={state.visits} visit={visit} />
+            </Container>
+        </div>
     );
 }
 export default Customer;

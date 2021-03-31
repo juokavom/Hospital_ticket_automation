@@ -1,5 +1,11 @@
 package com.hospital.ticket.controller;
 
+import com.hospital.ticket.constants.VisitStatus;
+import com.hospital.ticket.model.Visit;
+import com.hospital.ticket.repository.SpecialistRepository;
+import com.hospital.ticket.repository.VisitRepository;
+import org.apache.juli.logging.Log;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -12,18 +18,31 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import javax.management.DescriptorKey;
 import java.security.Principal;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 @Controller
 public class StompController {
     private final Logger LOG = Logger.getLogger(StompController.class.getName());
 
-    @MessageMapping("/update")
-    @SendTo("/queue/update")
-    public String broadcastUpdate(@Payload String message, Principal principal, Authentication auth) {
-        LOG.info("Principal (id) = " + principal.getName() + ", message = " + message + "authorities = " + auth.getAuthorities());
+    @Autowired
+    private SpecialistRepository specialistRepository;
 
-        return message;
+    @Autowired
+    private VisitRepository visitRepository;
+
+    @MessageMapping("/cancel")
+    @SendTo("/queue/cancel")
+    public String cancelTicket(@Payload String message, Principal customer, Authentication auth) {
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(customer.getName()));
+        Visit visit = null;
+        if (visitOpt.isPresent()) {
+            visit = visitOpt.get();
+        } else return "";
+        visit.setStatus(VisitStatus.CANCELLED);
+        //TODO recalculate times for other visits, affected by this cancellation
+        visitRepository.save(visit);
+        return visit.getId().toString();
     }
 
     @EventListener

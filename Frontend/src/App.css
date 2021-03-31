@@ -3,3 +3,67 @@
     align-items: center;
     height:40vh;  
 }
+.ticketBlue {
+    width: 100%;
+    background: linear-gradient(to top, #3acfd5 0%, #3a4ed5 100%);
+    border-radius: 70%;
+    position: relative;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.ticketBlue::before {
+    border-radius: 100%;
+    content: '';
+    background-image: linear-gradient(to bottom, #3acfd5 0%, #3a4ed5 100%);
+    top: -10px;
+    left: -10px;
+    bottom: -10px;
+    right: -10px;
+    position: absolute;
+    z-index:-1;
+}
+.ticketGreen {
+    width: 100%;
+    background: linear-gradient(to top, #3ad554 0%, #157c00 100%);
+    border-radius: 70%;
+    position: relative;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.ticketGreen::before {
+    border-radius: 100%;
+    content: '';
+    background-image: linear-gradient(to bottom, #3ad554 0%, #157c00 100%);
+    top: -10px;
+    left: -10px;
+    bottom: -10px;
+    right: -10px;
+    position: absolute;
+    z-index:-1;
+}
+.ticketGrey {
+    width: 100%;
+    background: linear-gradient(to top, #bdbdbd 0%, #818380 100%);
+    border-radius: 70%;
+    position: relative;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+}
+.ticketGrey::before {
+    border-radius: 100%;
+    content: '';
+    background-image: linear-gradient(to bottom, #bdbdbd 0%, #818380 100%);
+    top: -10px;
+    left: -10px;
+    bottom: -10px;
+    right: -10px;
+    position: absolute;
+    z-index:-1;
+}
+.ticket{
+    font-family: courier-new; 
+    color: white;
+}

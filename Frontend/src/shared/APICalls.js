@@ -1,6 +1,6 @@
 import { baseUrl } from "./baseUrl";
 
-export const GET = async(endpoint) => {
+export const GET = async (endpoint) => {
     return fetch(baseUrl + endpoint)
         .then(response => {
             if (response.ok) {
@@ -16,18 +16,27 @@ export const GET = async(endpoint) => {
                 var errmess = new Error(error.message);
                 throw errmess;
             })
-            .then(response => response.json())
-            .then(response => response)
+        .then(response => response.json())
+        .then(response => response)
 }
 
-export const login = async(credentials) => {
+export const login = async (credentials) => {
     return fetch(baseUrl + '/login', {
         method: 'POST',
         body: '',
         headers: {
-            'Authorization' : 'Basic ' + window.btoa(credentials.title + ':' + credentials.password),
+            'Authorization': 'Basic ' + window.btoa(credentials.title + ':' + credentials.password),
             'Content-Type': 'application/json'
         },
     }).then(response => response);
 }
 
+export const customerGETRequest = async (endpoint, jwt) => {
+    return fetch(baseUrl + endpoint, {
+        method: 'GET',
+        headers: {
+            'Authorization': jwt,
+            'Content-Type': 'application/json'
+        },
+    }).then(response => response);
+}

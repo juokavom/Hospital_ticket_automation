@@ -41,7 +41,7 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/specialists").permitAll()
                 .antMatchers("/visit/generate").permitAll()
-                .antMatchers("/visit").hasAuthority(SecurityConstants.CUSTOMER)
+                .antMatchers("/visit**").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)
                 .antMatchers("/login").authenticated().and().httpBasic();
     }
 
