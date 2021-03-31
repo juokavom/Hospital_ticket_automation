@@ -5,66 +5,62 @@ import Stomp from 'stompjs'; //requires dependency
 import { baseUrl } from '../shared/baseUrl';
 import Timer from './CounterComponent';
 import VisitsList from './VisitsListComponent';
-import { useAlert, withAlert } from 'react-alert';
+import { useAlert } from 'react-alert';
 import {
     Button, Card, CardTitle, CardText, Container, Row, Col, Collapse
 } from 'reactstrap';
 import { customerGETRequest } from '../shared/APICalls';
 
-// stompClient.debug = null;
 
-function Customer(props) {
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "updateVisit":
+            return { ...state, visit: action.payload }
+        case "updateVisits":
+            return { ...state, visits: action.payload }
+        default: return;
+    }
+}
+
+function Customer() {
     const [cookies] = useCookies(['customer']);
-    const [visit, setVisit] = useState(null);
-    const [visits, setVisits] = useState(null);
     const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const [canCancel, setCanCancel] = useState(true);
     const [stomp, setStomp] = useState(null);
     const [cancelledVisit, setCancelledVisit] = useState(null);
     const alert = useAlert(null)
-    const [state, dispatch] = useReducer(reducer, { visits: null });
+    const [state, dispatch] = useReducer(reducer, { visit: null, visits: null });
 
     useEffect(() => {
-        const time = visit != null ? visit.time.split(":") : ["00", "00"];
+        const time = state.visit != null ? state.visit.time.split(":") : ["00", "00"];
         setTime({ hours: parseInt(time[0]), minutes: parseInt(time[1]), seconds: 0 })
-        setCanCancel(visit != null ? visit.status === "DUE" ? true : false : false)
-    }, [visit])
+    }, [state.visit])
 
     useEffect(() => {
-        console.log('visits updated = ', state.visits)
-    }, [state])
+    }, [state.visits])
 
-
-    function reducer(state, action) {
-        switch (action.type) {
-            case "set":
-                return { visits: action.payload }
-            case "add":
-                return { ...state, visits: action.payload }
-        }
-    }
 
     useEffect(() => {
+        let myCancellation = false;
         if (cancelledVisit != null) {
-            if (cancelledVisit === visit.id) {
-                visit.status = "CANCELLED"
-                setVisit(state => visit)
-                // setCanCancel(false)
+            if (cancelledVisit === state.visit.id) {
+                myCancellation = true;
+                state.visit.status = "CANCELLED"
+                dispatch({ type: "updateVisit", payload: state.visit });
                 alert.show('Your visit was cancelled!', {
                     timeout: 3000,
                     type: 'error'
                 })
             }
-            console.log('Will remove from list if found')
             for (var i = 0; i < state.visits.length; i++) {
                 if (state.visits[i].id === cancelledVisit) {
-                    console.log('found, removimg ...', state.visits[i])
-                    let stateTemp = state.visits
-                    stateTemp.splice(i, 1)
-                    dispatch({ type: "add", payload: stateTemp });
+                    state.visits.splice(i, 1)
+                    dispatch({ type: "updateVisits", payload: state.visits });
+                    if(!myCancellation) alert.show('Other customer in front you cancelled the visit! Your time has been adjusted.', {
+                        timeout: 4000,
+                        type: 'info'
+                    })
                 }
             }
-            console.log('list after removing = ', state.visits)
         }
     }, [cancelledVisit])
 
@@ -77,34 +73,34 @@ function Customer(props) {
                 setCancelledVisit(parseInt(message.body));
             });
         })
+        stompClient.debug = null;
         setStomp(stompClient);
     }
 
-    const fetchVisit = () => {
-        return customerGETRequest("/visit", cookies.customer)
-            .then(response => {
-                if (response.status === 200) {
-                    return response;
-                }
-            })
-            .then(response => response.json())
-            .then(response => {
-                setVisit(response)
-            })
+    const fetchVisit = async () => {
+        dispatch({
+            type: "updateVisit",
+            payload: await customerGETRequest("/visit", cookies.customer)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response;
+                    }
+                }).then(response => response.json())
+        });
     }
 
-    const fetchVisits = () => {
-        return customerGETRequest("/visit/all", cookies.customer)
-            .then(response => {
-                if (response.status === 200) {
-                    return response;
-                }
-            })
-            .then(response => response.json())
-            .then(response => {
-                // setVisits(response)                
-                dispatch({ type: "set", payload: response });
-            })
+    const fetchVisits = async () => {
+        dispatch({
+            type: "updateVisits",
+            payload: await customerGETRequest("/visit/all", cookies.customer)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response;
+                    }
+                })
+                .then(response => response.json())
+        });
+        return
     }
 
     useEffect(() => {
@@ -112,16 +108,18 @@ function Customer(props) {
     }, [])
 
 
+    const cncl = () => state.visit != null ? state.visit.status === "DUE" ? true : false : false
+
     return (
         <div>
             <Container>
                 <Row className="mt-5">
                     <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
                         <Card body className="text-center">
-                            <CardTitle tag="h3"><em>{visit != null ? visit.specialist.title : ""}</em> visit queue</CardTitle>
+                            <CardTitle tag="h3"><em>{state.visit != null ? state.visit.specialist.title : ""}</em> visit queue</CardTitle>
                             <Row className="m-2">
                                 <Col>
-                                    <CardText tag="h5">Your visit code: <strong>{visit != null ? visit.code : ""}</strong></CardText>
+                                    <CardText tag="h5">Your visit code: <strong>{state.visit != null ? state.visit.code : ""}</strong></CardText>
                                 </Col>
                             </Row>
                             <Row className="m-2">
@@ -137,7 +135,7 @@ function Customer(props) {
                             </Row>
                             <Row className="m-2">
                                 <Col>
-                                    <Collapse isOpen={canCancel}>
+                                    <Collapse isOpen={cncl()}>
                                         <Button outline color="danger" onClick={() => stomp.send("/app/cancel", {}, {})}>Cancel visit</Button>
                                     </Collapse>
                                 </Col>
@@ -145,7 +143,7 @@ function Customer(props) {
                         </Card>
                     </Col>
                 </Row>
-                <VisitsList visits={state.visits} visit={visit} />
+                <VisitsList visits={state.visits} visit={state.visit} />
             </Container>
         </div>
     );

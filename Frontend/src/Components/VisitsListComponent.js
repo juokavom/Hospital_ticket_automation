@@ -1,14 +1,12 @@
 import React from 'react';
 import {
-    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse
+    Row, Col
 } from 'reactstrap';
 
 function VisitsList(props) {
 
     let vList = []
-    console.log(props)
     if(props.visits != null){
-        console.log('generating vlist')
         vList = props.visits.map(vis => {
             let color = vis.status === "DUE" ? "ticketGrey" : "ticketGreen";
             color = vis.id === props.visit.id ? "ticketBlue" : color
