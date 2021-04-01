@@ -40,6 +40,7 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/isInternal").permitAll()
+                .antMatchers("/visits").hasIpAddress(SecurityConstants.INTERNAL_IP)
                 .antMatchers("/specialists").permitAll()
                 .antMatchers("/visit/generate").permitAll()
                 .antMatchers("/visit**").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)

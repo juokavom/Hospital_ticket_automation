@@ -14,6 +14,7 @@ export const endActionEP = '/app/end/';
 export const singleVisitEP = '/visit';
 export const multipleVisitsEP = '/visit/all';
 
+export const isInternalEP = '/isInternal';
+export const allActiveVisitsEP = '/visits';
 export const generateTicketEp = '/visit/generate?id=';
-
 export const specialistVisitsEP = '/visit/specialist';

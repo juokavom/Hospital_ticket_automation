@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import {
-    Row, Col, UncontrolledAlert, Container, Card, CardTitle, CardText, Button
+    Row, Col, UncontrolledAlert, Container, Card, CardTitle, Collapse, Button
 } from 'reactstrap';
 import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
+import Screen from './ScreenComponent';
+import { baseUrl, isInternalEP } from '../shared/APIEndpoints';
 
 
 const Main = (props) => {
     const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
     const [activeWindow, setWindow] = useState("Main");
     const [isInternal, setIsInternal] = useState(null);
+    const [isNew, setIsNew] = useState(null);
 
     const getUserInternalStatus = () => {
-        fetch("http://localhost:8080/isInternal").then(resp => resp.json()).then(ipStatus => setIsInternal(ipStatus));
+        fetch(baseUrl + isInternalEP).then(resp => resp.json()).then(ipStatus => setIsInternal(ipStatus));
+    }
+
+    const checkFirstTimeVisitor = () => {
+        if(cookies.new === undefined) setIsNew(true)
+        else setIsNew(false)
+        setCookie('new', true)
     }
 
     useEffect(() => {
@@ -29,13 +38,9 @@ const Main = (props) => {
 
     useEffect(() => {
         getUserInternalStatus();
+        checkFirstTimeVisitor();
     }, []);
 
-    const checkFirstTimeVisitor = () => {
-        let first = cookies.new;
-        setCookie('new', true)
-        return first !== undefined
-    }
 
     if (activeWindow === "Customer") {
         return (
@@ -51,28 +56,37 @@ const Main = (props) => {
             </div >
         );
     }
+    else if (activeWindow === "Screen") {
+        return (
+            <div>
+                <Screen setWindow={(win) => setWindow(win)} />
+            </div >
+        );
+    }
 
     else {
         return (
             <div>
                 <Menu />
                 <div>
-                    <Container>
-                        <Row className="mt-5">
-                            <Col sm="12" md={{ size: 8, offset: 2 }} lg={{ size: 6, offset: 3 }}>
-                                <Card body inverse className="text-center" style={{ backgroundColor: '#333', borderColor: '#333' }}>
-                                    <CardTitle tag="h5">You are connected from internal network</CardTitle>
-                                    <Row>
-                                        <Col>
-                                            <Button color="warning"><strong>Open visit displayer</strong></Button>
-                                        </Col>
-                                    </Row>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Container>
+                    <Collapse isOpen={isInternal}>
+                        <Container>
+                            <Row className="mt-5">
+                                <Col sm="12" md={{ size: 8, offset: 2 }} lg={{ size: 6, offset: 3 }}>
+                                    <Card body inverse className="text-center" style={{ backgroundColor: '#333', borderColor: '#333' }}>
+                                        <CardTitle tag="h5">You are connected from internal network</CardTitle>
+                                        <Row>
+                                            <Col>
+                                                <Button color="warning" onClick={() => { setWindow("Screen") }}><strong>Open department screen</strong></Button>
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </Container>
+                    </Collapse>
                 </div>
-                <div hidden={checkFirstTimeVisitor()}>
+                <Collapse isOpen={isNew}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
                             <UncontrolledAlert color="secondary text-center">
@@ -80,7 +94,7 @@ const Main = (props) => {
                             </UncontrolledAlert>
                         </Col>
                     </Row>
-                </div>
+                </Collapse>
             </div>
         );
     }

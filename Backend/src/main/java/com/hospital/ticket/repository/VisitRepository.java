@@ -20,5 +20,8 @@ public interface VisitRepository extends CrudRepository<Visit, Long> {
     List<Visit> findActiveVisitsAffectedByCancellation(Long specialistId, Long cancelledVisitId);
 
     @Query(value = "SELECT * FROM visit WHERE fk_specialist = ?1 AND (status = 'DUE' OR  status = 'STARTED') ORDER BY id ASC", nativeQuery = true)
-    List<Visit> findAllActiveVisits(Long specialistId);
+    List<Visit> findAllActiveSpecialistVisits(Long specialistId);
+
+    @Query(value = "SELECT * FROM visit WHERE (status = 'DUE' OR  status = 'STARTED') ORDER BY id ASC", nativeQuery = true)
+    List<Visit> findAllActiveVisits();
 }

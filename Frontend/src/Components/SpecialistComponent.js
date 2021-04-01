@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import { 
     baseUrl, cancelActionEP, cancelStompEP, startStompEP, endStompEP, addStompEP, 
-    endActionEP, startActionEP, specialistVisitsEP
+    endActionEP, startActionEP, specialistVisitsEP, wsEP
  } from '../shared/APIEndpoints';
 import { useAlert } from 'react-alert';
 import {
@@ -150,7 +150,7 @@ function Specialist(props) {
     const getSpecialist = JSON.parse(localStorage.getItem('specialist'));
 
     const registerSTOMP = () => {
-        var sock = new SockJS(baseUrl + '/ticket');
+        var sock = new SockJS(baseUrl + wsEP);
         let stompClient = Stomp.over(sock);
 
         stompClient.connect({ 'Authorization': cookies.specialist }, () => {

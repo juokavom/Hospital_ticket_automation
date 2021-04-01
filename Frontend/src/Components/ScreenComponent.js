@@ -14,166 +14,87 @@ import {
 
 const reducer = (state, action) => {
     switch (action.type) {
+        case "cancel":
+            if (state.due != null && state.due.length > 0) {
+                var list = state.due.filter(i => i.id !== action.payload);
+                return { ...state, due: list }
+            }
+            break;
+        case "add":
+            if (state.due != null) {
+                state.due.push(action.payload)
+                return { ...state, due: state.due }
+            } else {
+                return { ...state, due: [action.payload] }
+            }
+        case "end":
+            if (state.active != null && state.active.length > 0) {
+                var list = state.active.length > 1 ? state.active.filter(i => i.id !== action.payload) : null;
+                return { ...state, active: list }
+            }
+            break;
+        case "start":
+            if (state.due != null && state.due.length > 0) {
+                var node = state.due.filter(i => i.id === action.payload)[0];
+                console.log('node = ', node)
+                var dueList = state.due.length > 1 ? state.due.filter(i => i.id !== action.payload) : null;
+                if (state.active != null) {
+                    state.active.push(node)
+                    return { ...state, due: dueList, active: state.active }
+                } else {
+                    return { ...state, due: dueList, active: [node] }
+                }
+            }
+            break;
         case "setVisits":
-            if (action.payload.length > 1) {
-                const firstElement = action.payload.shift();
-                return { ...state, visits: action.payload, first: firstElement, inited: true }
-            } else if (action.payload.length === 1) {
-                return { ...state, first: action.payload[0], inited: true }
-            } else {
-                return { ...state, inited: true }
-            }
-        case "startVisit":
-            if (state.first != null && state.first.id === action.payload) {
-                state.first.status = "STARTED"
-                return { ...state, first: state.first }
-            }
-            break;
-        case "endVisit":
-            if (state.first != null && state.first.id === action.payload) {
-                state.first.status = "ENDED"
-                return { ...state, first: state.first }
-            }
-            break;
-        case "addVisit":
-            if (state.first == null) {
-                return { ...state, first: action.payload }
-            } else if (state.visits == null) {
-                return { ...state, visits: [action.payload] }
-            } else {
-                var list = state.visits
-                list.push(action.payload)
-                return { ...state, visits: list }
-            }
-        case "cancelVisit":
-            if (state.first != null && state.first.id === action.payload) {
-                if (state.visits != null && state.visits.length > 0) {
-                    const firstElement = state.visits.shift();
-                    return { ...state, visits: state.visits, first: firstElement }
-                }
-                return { ...state, first: null }
-            } else {
-                if (state.visits != null && state.visits.length > 0) {
-                    var list = state.visits.filter(i => i.id !== action.payload);
-                    return { ...state, visits: list }
-                }
-                break;
-            }
-        case "updateVisitsAndFirst":
-            return { ...state, visits: action.visits, first: action.first }
+            console.log('set visit called, load = ', action.payload)
+            var dueList = action.payload.filter(i => i.status === "DUE")
+            var activeList = action.payload.filter(i => i.status === "STARTED")
+            dueList = dueList.length > 0 ? dueList : null
+            activeList = activeList.length > 0 ? activeList : null
+            console.log('due list = ', dueList)
+            console.log('active list = ', activeList)
+            return { ...state, due: dueList, active: activeList }
         case "updateStomp":
             return { ...state, stomp: action.payload }
         default: return;
     }
 }
 
-function VisitTable(props) {
-    if (props.visits != null) {
-        if (props.visits.length > 0) {
-            const generateVisitTable = props.visits.map(vis => {
-                return (
-                    <tr key={vis.id}>
-                        <th scope="row">{vis.code}</th>
-                        <td>{vis.time}</td>
-                        <td>{vis.status}</td>
-                        <td><Button outline onClick={() => props.stomp.send(cancelActionEP + props.specialist.id, {}, vis.id)}>Cancel</Button></td>
-                    </tr>
-                );
-            });
-
-            return (
-                <Row className="mt-5" style={{ paddingBottom: '200px' }}>
-                    <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
-                        <Card body className="text-center">
-                            <CardTitle tag="h3">Rest visits</CardTitle>
-                            <Table hover>
-                                <thead>
-                                    <tr>
-                                        <th>Code</th>
-                                        <th>Time</th>
-                                        <th>Status</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {generateVisitTable}
-                                </tbody>
-                            </Table>
-                        </Card>
-                    </Col>
-                </Row>);
-        }
-    }
-    return (<div></div>);
-}
 
 function Screen(props) {
-    const [cancelledVisit, setCancelledVisit] = useState({ id: null, affectedVisits: null });
-    const [addedVisit, setAddedVisit] = useState({ affectedVisit: null });
-    const alert = useAlert(null)
-    const [state, dispatch] = useReducer(reducer, { visits: null, stomp: null, inited: false });
-    const [cookies, setCookie, unsetCookie] = useCookies(['screen']);
+    const [state, dispatch] = useReducer(reducer, { due: null, active: null, stomp: null });
 
 
-    useEffect(() => {
-        if (cancelledVisit.affectedVisits != null && state.visits != null) {
-            for (var i = 0; i < state.visits.length; i++) {
-                for (var u = 0; u < cancelledVisit.affectedVisits.length; u++) {
-                    if (state.visits[i].id === cancelledVisit.affectedVisits[u].id) {
-                        state.visits[i].time = cancelledVisit.affectedVisits[u].time
-                        dispatch({ type: "updateVisitsAndFirst", visits: state.visits, first: state.first });
-                    }
-                }
-            }
-        }
-        if (cancelledVisit.id != null) {
-            alert.show('One of your visits were cancelled! Times for other customers have been recalculated.', {
-                timeout: 3000,
-                type: 'info'
+    const registerSTOMP = (jwt) => {
+        if (state.stomp == null) {
+            console.log('register STOMP')
+            var sock = new SockJS(baseUrl + wsEP);
+            let stompClient = Stomp.over(sock);
+
+            stompClient.connect({ 'Authorization': jwt }, () => {
+                stompClient.subscribe(cancelStompEP, (message) => {
+                    let body = JSON.parse(message.body)
+                    dispatch({ type: "cancel", payload: parseInt(body) });
+                });
+                stompClient.subscribe(startStompEP, (message) => {
+                    let body = JSON.parse(message.body)
+                    dispatch({ type: "start", payload: parseInt(body) });
+                });
+                stompClient.subscribe(endStompEP, (message) => {
+                    let body = JSON.parse(message.body)
+                    dispatch({ type: "end", payload: parseInt(body) });
+                });
+                stompClient.subscribe(addStompEP, (message) => {
+                    let body = JSON.parse(message.body)
+                    dispatch({ type: "add", payload: body });
+                });
             })
-            dispatch({ type: "cancelVisit", payload: cancelledVisit.id });
+            // stompClient.debug = null;
+            dispatch({ type: "updateStomp", payload: stompClient });
         }
-
-    }, [cancelledVisit])
-
-    useEffect(() => {
-        if (addedVisit.affectedVisit != null) {
-            dispatch({ type: "addVisit", payload: addedVisit.affectedVisit });
-            alert.show('You have new visit!', {
-                timeout: 3000,
-                type: 'info'
-            })
-        }
-    }, [addedVisit])
-
-    const getSpecialist = JSON.parse(localStorage.getItem('specialist'));
-
-    const registerSTOMP = () => {
-        var sock = new SockJS(baseUrl + wsEP);
-        let stompClient = Stomp.over(sock);
-
-        stompClient.connect({ 'Authorization': cookies.screen }, () => {
-            stompClient.subscribe(cancelStompEP, (message) => {
-                let body = JSON.parse(message.body)
-                setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
-            });
-            stompClient.subscribe(startStompEP, (message) => {
-                let body = JSON.parse(message.body)
-                dispatch({ type: "startVisit", payload: parseInt(body.id) });
-            });
-            stompClient.subscribe(endStompEP, (message) => {
-                let body = JSON.parse(message.body)
-                dispatch({ type: "endVisit", payload: parseInt(body.id) });
-                dispatch({ type: "cancelVisit", payload: parseInt(body.id) });
-            });
-            stompClient.subscribe(addStompEP, (message) => {
-                let body = JSON.parse(message.body)
-                setAddedVisit({ affectedVisit: body });
-            });
-        })
-        // stompClient.debug = null;
-        dispatch({ type: "updateStomp", payload: stompClient });
     }
+
 
     const fetchVisits = async () => {
         fetch(baseUrl + allActiveVisitsEP)
@@ -181,56 +102,77 @@ function Screen(props) {
                 if (response.status === 200) {
                     return response;
                 }
-            }).then(response => response.json()).then(response => {
-                setCookie('screen', response.token);
-                unsetCookie('specialist')
-                unsetCookie('customer')
+            })
+            .then(response => response.json())
+            .then(response => {
+                registerSTOMP(response.token);
                 dispatch({ type: "setVisits", payload: response.allVisits });
             })
 
     }
 
     useEffect(() => {
-        return (registerSTOMP(), fetchVisits())
+        fetchVisits()
     }, [])
 
-
-    return (
-        <div>
-            <Container>
-                <Row className="mt-5">
-                    <Col>
-                        <Card body className="text-center">
-                            <CardTitle tag="h3">Due visits</CardTitle>
-                            {/* <VisitTable visits={state.visits} specialist={getSpecialist} stomp={state.stomp} /> */}
-                        </Card>
-                    </Col>
-                    <Col>
-                        <Card body className="text-center">
-                            <CardTitle tag="h3">Active visits</CardTitle>
-                            {/* <VisitTable visits={state.visits} specialist={getSpecialist} stomp={state.stomp} /> */}
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
-        </div >
-    );
-
-    // let vList = []
-    // if(props.visits != null){
-    //     vList = props.visits.map(vis => {
-    //         let color = "ticketGrey"
-    //         if(vis.id === props.visit.id) color = "ticketBlue";
-    //         if(vis.status === "STARTED") color = "ticketGreen";
-    //         color += " ticket"
-    //         return (
-    //             <Row key={vis.id} className="mt-5">
-    //                 <Col xs={{ size: 6, offset: 3 }} md={{ size: 4, offset: 4 }}>
-    //                     <div className={color}>{vis.code.toUpperCase()} <em>({vis.status.toLowerCase()})</em></div>
-    //                 </Col>
-    //             </Row>);
-    //     });
-    // }
+    if (state != null) {
+        return (
+            <div>
+                <Container>
+                    <Row className="mt-3 text-center">
+                        <Col>
+                            <Button color="secondary" onClick={() => {
+                                dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
+                                props.setWindow("Main")
+                            }}>Go to main page</Button>
+                        </Col>
+                    </Row>
+                    <Row className="mt-3">
+                        <Col>
+                            <Card body className="text-center">
+                                <CardTitle tag="h3">Upcomming visits</CardTitle>
+                            </Card>
+                            <VisitsList visits={state.due} class="ticketGrey ticket" />
+                        </Col>
+                        <Col>
+                            <Card body className="text-center">
+                                <CardTitle tag="h3">Active visits</CardTitle>
+                            </Card>
+                            <VisitsList visits={state.active} class="ticketGreen ticket" />
+                        </Col>
+                    </Row>
+                </Container>
+            </div >
+        );
+    } else {
+        return (<div></div>);
+    }
 
 }
 export default Screen;
+
+
+function VisitsList(props) {
+    let vList = []
+    if (props.visits != null) {
+        console.log('propsai = ', props)
+        vList = props.visits.map(vis => {
+            console.log('propsai arejuj, vis = ', vis)
+            return (
+                <Row key={vis.id} className="mt-5">
+                    <Col xs={{ size: 10, offset: 1 }}>
+                        <div className={props.class}>
+                            <p style={{ fontSize: '40px' }}>
+                                {vis.code.toUpperCase()}
+                            </p>
+                        </div>
+                    </Col>
+                </Row>);
+        });
+    }
+    return (
+        <div>
+            {vList}
+        </div>
+    );
+}

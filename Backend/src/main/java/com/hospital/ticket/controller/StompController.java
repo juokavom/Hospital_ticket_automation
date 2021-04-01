@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,9 @@ public class StompController {
     private final Logger LOG = Logger.getLogger(StompController.class.getName());
 
     @Autowired
+    private SimpMessagingTemplate msgTemplate;
+
+    @Autowired
     private SpecialistRepository specialistRepository;
 
     @Autowired
@@ -46,6 +50,7 @@ public class StompController {
         visit.setStatus(VisitStatus.CANCELLED);
         List<Visit> activeVisits = Utils.recalculateTime(visitRepository, visit);
         visitRepository.save(visit);
+        msgTemplate.convertAndSend("/queue/cancel/", visit.getId());
         return new CancelledVisit(visit.getId().toString(), activeVisits);
     }
 
@@ -59,6 +64,7 @@ public class StompController {
         } else return null;
         visit.setStatus(VisitStatus.STARTED);
         visitRepository.save(visit);
+        msgTemplate.convertAndSend("/queue/start/", visit.getId());
         return visit;
     }
 
@@ -72,6 +78,7 @@ public class StompController {
         } else return null;
         visit.setStatus(VisitStatus.ENDED);
         visitRepository.save(visit);
+        msgTemplate.convertAndSend("/queue/end/", visit.getId());
         return visit;
     }
 

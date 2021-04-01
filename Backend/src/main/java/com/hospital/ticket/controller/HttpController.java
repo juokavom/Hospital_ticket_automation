@@ -3,6 +3,7 @@ package com.hospital.ticket.controller;
 import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.model.Specialist;
 import com.hospital.ticket.model.Visit;
+import com.hospital.ticket.model.VisitsWithJWT;
 import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
@@ -81,7 +82,7 @@ public class HttpController {
         visitRepository.save(newVisit);
         response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
         msgTemplate.convertAndSend("/queue/add/" + specialist.getId(), newVisit);
-
+        msgTemplate.convertAndSend("/queue/add/", newVisit);
     }
 
     @GetMapping("/visit")
@@ -123,15 +124,22 @@ public class HttpController {
             response.setStatus(404);
             return null;
         }
-        List<Visit> activeVisits = visitRepository.findAllActiveVisits(specialist.getId());
+        List<Visit> activeVisits = visitRepository.findAllActiveSpecialistVisits(specialist.getId());
         response.setStatus(200);
         return activeVisits;
+    }
+
+    @GetMapping("/visits")
+    public VisitsWithJWT getAllVisits( HttpServletResponse response){
+        response.setStatus(200);
+        return new VisitsWithJWT(JWTToken.generate(SecurityConstants.SCREEN, SecurityConstants.SCREEN),
+                visitRepository.findAllActiveVisits());
     }
 
     @GetMapping("/isInternal")
     public boolean getIsInternal(HttpServletRequest request, HttpServletResponse response){
         response.setStatus(200);
-        return request.getRemoteAddr().equals("0:0:0:0:0:0:0:1");
+        return request.getRemoteAddr().equals(SecurityConstants.INTERNAL_IP);
     }
 
 
