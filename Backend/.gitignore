@@ -30,7 +30,6 @@ build/
 !**/src/test/**/build/
 
 ### Sensitive data
-/**/application.properties
 /**/SecretConstants.java
 
 ### VS Code ###
