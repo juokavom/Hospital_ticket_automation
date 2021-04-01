@@ -32,6 +32,8 @@ function Customer(props) {
     const alert = useAlert(null)
     const [state, dispatch] = useReducer(reducer, { visit: null, visits: null, time: { hours: 0, minutes: 0, seconds: 0 }, stomp: null });
     const [isModalOpen, setModalOpen] = useState(false);
+    const [startedVisit, setStartedVisit] = useState({ affectedVisit: null });
+    const [endedVisit, setEndedVisit] = useState({ affectedVisit: null });
 
     useEffect(() => {
         const time = state.visit != null ? state.visit.time.split(":") : ["00", "00"];
@@ -62,7 +64,7 @@ function Customer(props) {
                     type: 'info'
                 })
             }
-            for (var i = 0; i < state.visits.length; i++) {
+            for (i = 0; i < state.visits.length; i++) {
                 for (var u = 0; u < cancelledVisit.affectedVisits.length; u++) {
                     if (state.visits[i].id === cancelledVisit.affectedVisits[u].id) {
                         state.visits[i].time = cancelledVisit.affectedVisits[u].time
@@ -78,6 +80,63 @@ function Customer(props) {
         }
     }, [cancelledVisit])
 
+    useEffect(() => {
+        if (startedVisit.affectedVisit != null) {
+            let startedSomeone = false;
+            if (state.visits != null && state.visits.length > 0) {
+                state.visits.map(i => {
+                    if (i.id == startedVisit.affectedVisit) {
+                        i.status = "STARTED"
+                        startedSomeone = true
+                    }
+                });
+                dispatch({ type: "updateVisits", payload: state.visits });
+            }
+
+            if (state.visit != null && state.visit.id == startedVisit.affectedVisit) {
+                state.visit.status = "STARTED"
+                alert.show('Your visit was started!', {
+                    timeout: 3000,
+                    type: 'success'
+                })
+                dispatch({ type: "updateVisit", payload: state.visit });
+            } else if (startedSomeone) {
+                alert.show('Visit has started for one of the customers in front you!', {
+                    timeout: 3000,
+                    type: 'success'
+                })
+            }
+        }
+    }, [startedVisit.affectedVisit])
+
+    useEffect(() => {
+        if (endedVisit.affectedVisit != null) {
+            let endedSomeone = false;
+            if (state.visits != null && state.visits.length > 0) {
+                endedSomeone = true;
+                if (state.visits.length == 1) dispatch({ type: "updateVisits", payload: null });
+                else {
+                    var list = state.visits.filter(i => i.id !== endedVisit.affectedVisit);
+                    dispatch({ type: "updateVisits", payload: list });
+                }
+            }
+
+            if (state.visit != null && state.visit.id == endedVisit.affectedVisit) {
+                state.visit.status = "ENDED"
+                alert.show('Your visit was ended!', {
+                    timeout: 3000,
+                    type: 'error'
+                })
+                dispatch({ type: "updateVisit", payload: state.visit });
+            } else if (endedSomeone) {
+                alert.show('Visit has ended for one of the customers in front you!', {
+                    timeout: 3000,
+                    type: 'info'
+                })
+            }
+        }
+    }, [endedVisit.affectedVisit])
+
     const getSpecialistId = JSON.parse(localStorage.getItem('specialist')).id;
 
     const registerSTOMP = () => {
@@ -88,6 +147,14 @@ function Customer(props) {
             stompClient.subscribe("/queue/cancel/" + getSpecialistId, (message) => {
                 let body = JSON.parse(message.body)
                 setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
+            });
+            stompClient.subscribe("/queue/start/" + getSpecialistId, (message) => {
+                let body = JSON.parse(message.body)
+                setStartedVisit({ affectedVisit: parseInt(body.id) });
+            });
+            stompClient.subscribe("/queue/end/" + getSpecialistId, (message) => {
+                let body = JSON.parse(message.body)
+                setEndedVisit({ affectedVisit: parseInt(body.id) });
             });
         })
         stompClient.debug = null;
@@ -124,12 +191,11 @@ function Customer(props) {
         return (fetchVisit(), fetchVisits(), registerSTOMP())
     }, [])
 
-
-    const cncl = () => state.visit != null ? state.visit.status === "DUE" ? true : false : false
-
-    if (state.visit != null && state.visits != null) {
+    if (state.visit != null) {
         switch (state.visit.status) {
-            case "ENDED", "CANCELLED":
+            case "ENDED":
+            case "STARTED":
+            case "CANCELLED":
                 return (
                     <div>
                         <Container>
@@ -139,16 +205,25 @@ function Customer(props) {
                                         <CardTitle tag="h3">Your visit for <em>{state.visit.specialist.title} was {state.visit.status}</em></CardTitle>
                                         <Row className="m-2">
                                             <Col>
-                                                <CardText>Planned time of the visit
-                                            : <strong>{state.time.hours}:{state.time.minutes < 10 ? "0" : ""}{state.time.minutes}</strong></CardText>
+                                                <CardText tag="h5">Your visit code: <strong>{state.visit.code}</strong></CardText>
                                             </Col>
                                         </Row>
+                                        <Collapse isOpen={state.visit.status == "CANCELLED"}>
+                                            <Row className="m-2">
+                                                <Col>
+                                                    <CardText>Planned time of the visit
+                                            : <strong>{state.time.hours}:{state.time.minutes < 10 ? "0" : ""}{state.time.minutes}</strong></CardText>
+                                                </Col>
+                                            </Row>
+                                        </Collapse>
                                         <Row className="m-2">
                                             <Col>
-                                                <Button color="secondary" onClick={() => {
-                                                    removeCookie("customer");
-                                                    props.setWindow("Main")
-                                                }}>Go to main page</Button>
+                                                <Collapse isOpen={state.visit.status != "STARTED"}>
+                                                    <Button color="secondary" onClick={() => {
+                                                        removeCookie("customer");
+                                                        props.setWindow("Main")
+                                                    }}>Go to main page</Button>
+                                                </Collapse>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -158,67 +233,67 @@ function Customer(props) {
                     </div>
                 );
             default:
-                return (
-                    <div>
-                        <Container>
-                            <Modal isOpen={isModalOpen} toggle={() => setModalOpen(!isModalOpen)}>
-                                <ModalBody className="text-center">
-                                    <Label tag="h5">Are you sure you want to cancel this visit? This action cannot be undone.</Label>
-                                    <Row body className="text-center mt-4">
-                                        <Col>
-                                            <Button outline color="primary" onClick={() => setModalOpen(false)}>No, go back!</Button>
-                                        </Col>
-                                        <Col>
-                                            <Button color="danger" onClick={() => {
-                                                state.stomp.send("/app/cancel/" + getSpecialistId, {}, state.visit.id);
-                                            }}>Yes, cancel!</Button>
-                                        </Col>
-                                    </Row>
-                                </ModalBody>
-                            </Modal>
-                            <Row className="mt-5">
-                                <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
-                                    <Card body className="text-center">
-                                        <CardTitle tag="h3"><em>{state.visit.specialist.title}</em> visit queue</CardTitle>
-                                        <Row className="m-2">
+                if (state.visits != null) {
+                    return (
+                        <div>
+                            <Container>
+                                <Modal isOpen={isModalOpen} toggle={() => setModalOpen(!isModalOpen)}>
+                                    <ModalBody className="text-center">
+                                        <Label tag="h5">Are you sure you want to cancel this visit? This action cannot be undone.</Label>
+                                        <Row body className="text-center mt-4">
                                             <Col>
-                                                <CardText tag="h5">Your visit code: <strong>{state.visit.code}</strong></CardText>
+                                                <Button outline color="primary" onClick={() => setModalOpen(false)}>No, go back!</Button>
+                                            </Col>
+                                            <Col>
+                                                <Button color="danger" onClick={() => {
+                                                    state.stomp.send("/app/cancel/" + getSpecialistId, {}, state.visit.id);
+                                                }}>Yes, cancel!</Button>
                                             </Col>
                                         </Row>
-                                        <Row className="m-2">
-                                            <Col>
-                                                <CardText>Time of the visit
+                                    </ModalBody>
+                                </Modal>
+                                <Row className="mt-5">
+                                    <Col xs={{ size: 10, offset: 1 }} md={{ size: 6, offset: 3 }}>
+                                        <Card body className="text-center">
+                                            <CardTitle tag="h3"><em>{state.visit.specialist.title}</em> visit queue</CardTitle>
+                                            <Row className="m-2">
+                                                <Col>
+                                                    <CardText tag="h5">Your visit code: <strong>{state.visit.code}</strong></CardText>
+                                                </Col>
+                                            </Row>
+                                            <Row className="m-2">
+                                                <Col>
+                                                    <CardText>Time of the visit
                                             : <strong>{state.time.hours}:{state.time.minutes < 10 ? "0" : ""}{state.time.minutes}</strong></CardText>
-                                            </Col>
-                                        </Row>
-                                        <Row className="m-2">
-                                            <Col>
-                                                <CardText><strong>{state.visits.length - 1}</strong> people are in line before you</CardText>
-                                            </Col>
-                                        </Row>
-                                        <Row className="m-2">
-                                            <Col>
-                                                <Timer time={state.time} />
-                                            </Col>
-                                        </Row>
-                                        <Row className="m-2">
-                                            <Col>
-                                                <Collapse isOpen={cncl()}>
+                                                </Col>
+                                            </Row>
+                                            <Row className="m-2">
+                                                <Col>
+                                                    <CardText><strong>{state.visits.length - 1}</strong> people are in line before you</CardText>
+                                                </Col>
+                                            </Row>
+                                            <Row className="m-2">
+                                                <Col>
+                                                    <Timer time={state.time} />
+                                                </Col>
+                                            </Row>
+                                            <Row className="m-2">
+                                                <Col>
                                                     <Button outline color="danger" onClick={() => setModalOpen(true)}>Cancel visit</Button>
-                                                </Collapse>
-                                            </Col>
-                                        </Row>
-                                    </Card>
-                                </Col>
-                            </Row>
-                            <Row style={{ paddingBottom: '200px' }}>
-                                <Col>
-                                    <VisitsList visits={state.visits} visit={state.visit} />
-                                </Col>
-                            </Row>
-                        </Container>
-                    </div >
-                );
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    </Col>
+                                </Row>
+                                <Row style={{ paddingBottom: '200px' }}>
+                                    <Col>
+                                        <VisitsList visits={state.visits} visit={state.visit} />
+                                    </Col>
+                                </Row>
+                            </Container>
+                        </div >
+                    );
+                }
         }
     }
     return (<div></div>);

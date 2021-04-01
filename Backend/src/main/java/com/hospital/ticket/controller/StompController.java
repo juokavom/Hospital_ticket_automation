@@ -49,6 +49,32 @@ public class StompController {
         return new CancelledVisit(visit.getId().toString(), activeVisits);
     }
 
+    @MessageMapping("/start/{id}")
+    @SendTo("/queue/start/{id}")
+    public Visit startTicket(@Payload String message, Authentication auth, @DestinationVariable Long id) {
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(message));
+        Visit visit = null;
+        if (visitOpt.isPresent()) {
+            visit = visitOpt.get();
+        } else return null;
+        visit.setStatus(VisitStatus.STARTED);
+        visitRepository.save(visit);
+        return visit;
+    }
+
+    @MessageMapping("/end/{id}")
+    @SendTo("/queue/end/{id}")
+    public Visit endTicket(@Payload String message, Authentication auth, @DestinationVariable Long id) {
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(message));
+        Visit visit = null;
+        if (visitOpt.isPresent()) {
+            visit = visitOpt.get();
+        } else return null;
+        visit.setStatus(VisitStatus.ENDED);
+        visitRepository.save(visit);
+        return visit;
+    }
+
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         LOG.info("Received a new web socket connection" + event.toString());

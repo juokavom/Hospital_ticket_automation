@@ -21,6 +21,16 @@ const reducer = (state, action) => {
             } else {
                 return { ...state, inited: true }
             }
+        case "startVisit":
+            if (state.first != null && state.first.id == action.payload) {
+                state.first.status = "STARTED"
+                return { ...state, first: state.first }
+            }
+        case "endVisit":
+            if (state.first != null && state.first.id == action.payload) {
+                state.first.status = "ENDED"
+                return { ...state, first: state.first }
+            }
         case "addVisit":
             if (state.first == null) {
                 return { ...state, first: action.payload }
@@ -98,11 +108,10 @@ function Specialist(props) {
     const [addedVisit, setAddedVisit] = useState({ affectedVisit: null });
     const alert = useAlert(null)
     const [state, dispatch] = useReducer(reducer, { visits: null, first: null, stomp: null, inited: false });
-    const [isModalOpen, setModalOpen] = useState(false);
 
 
     useEffect(() => {
-        if (cancelledVisit.affectedVisits != null) {
+        if (cancelledVisit.affectedVisits != null && state.visits != null) {
             for (var i = 0; i < state.visits.length; i++) {
                 for (var u = 0; u < cancelledVisit.affectedVisits.length; u++) {
                     if (state.visits[i].id === cancelledVisit.affectedVisits[u].id) {
@@ -142,6 +151,15 @@ function Specialist(props) {
             stompClient.subscribe("/queue/cancel/" + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
                 setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
+            });
+            stompClient.subscribe("/queue/start/" + getSpecialist.id, (message) => {
+                let body = JSON.parse(message.body)
+                dispatch({ type: "startVisit", payload: parseInt(body.id) });
+            });
+            stompClient.subscribe("/queue/end/" + getSpecialist.id, (message) => {
+                let body = JSON.parse(message.body)
+                dispatch({ type: "endVisit", payload: parseInt(body.id) });
+                dispatch({ type: "cancelVisit", payload: parseInt(body.id) });
             });
             stompClient.subscribe("/queue/add/" + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
@@ -193,7 +211,7 @@ function Specialist(props) {
 
                                 <Row className="mt-4">
                                     <Col>
-                                        <CardText tag="h5">Upcomming visit: <strong></strong></CardText>
+                                        <CardText tag="h5">{state.first.status == "DUE" ? "Upcomming" : "Current"} visit: <strong></strong></CardText>
                                     </Col>
                                 </Row>
                                 <Row className="mt-3 mr-3 ml-3">
@@ -219,12 +237,14 @@ function Specialist(props) {
                                 <Row className="mr-5 ml-5">
                                     <Col>
                                         <Collapse isOpen={state.first.status === "DUE"}>
-                                            <Button color="success">Start</Button>
+                                            <Button color="success" onClick={() =>
+                                                state.stomp.send("/app/start/" + getSpecialist.id, {}, state.first.id)}>Start</Button>
                                         </Collapse>
                                     </Col>
                                     <Col>
                                         <Collapse isOpen={state.first.status === "STARTED"}>
-                                            <Button color="danger">End</Button>
+                                            <Button color="danger" onClick={() =>
+                                                state.stomp.send("/app/end/" + getSpecialist.id, {}, state.first.id)}>End</Button>
                                         </Collapse>
                                     </Col>
                                     <Col>
