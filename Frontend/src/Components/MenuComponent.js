@@ -5,7 +5,7 @@ import {
     Modal, ModalHeader, ModalBody, Form, FormGroup, Input, FormFeedback, Collapse, Alert
 } from 'reactstrap';
 import { GET, login } from '../shared/APICalls';
-import { baseUrl } from '../shared/baseUrl';
+import { baseUrl, generateTicketEp } from '../shared/APIEndpoints';
 
 let specialistsList = []
 GET('/specialists').then(resp => specialistsList = resp)
@@ -27,7 +27,7 @@ const Menu = (props) => {
     });
 
     const generateTicket = () => {
-        fetch(baseUrl + "/visit/generate?id=" + selectedSpecialist.id)
+        fetch(baseUrl + generateTicketEp + selectedSpecialist.id)
             .then(response => {
                 if (response.status === 200) {
                     localStorage.setItem('specialist', JSON.stringify(selectedSpecialist));

@@ -2,7 +2,9 @@ import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import { baseUrl } from '../shared/baseUrl';
+import {
+    baseUrl, wsEP, cancelStompEP, startStompEP, endStompEP, singleVisitEP, multipleVisitsEP, cancelActionEP
+} from '../shared/APIEndpoints';
 import Timer from './CounterComponent';
 import VisitsList from './VisitsListComponent';
 import { useAlert } from 'react-alert';
@@ -140,19 +142,19 @@ function Customer(props) {
     const getSpecialistId = JSON.parse(localStorage.getItem('specialist')).id;
 
     const registerSTOMP = () => {
-        var sock = new SockJS(baseUrl + '/ticket');
+        var sock = new SockJS(baseUrl + wsEP);
         let stompClient = Stomp.over(sock);
 
         stompClient.connect({ 'Authorization': cookies.customer }, () => {
-            stompClient.subscribe("/queue/cancel/" + getSpecialistId, (message) => {
+            stompClient.subscribe(cancelStompEP + getSpecialistId, (message) => {
                 let body = JSON.parse(message.body)
                 setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
             });
-            stompClient.subscribe("/queue/start/" + getSpecialistId, (message) => {
+            stompClient.subscribe(startStompEP + getSpecialistId, (message) => {
                 let body = JSON.parse(message.body)
                 setStartedVisit({ affectedVisit: parseInt(body.id) });
             });
-            stompClient.subscribe("/queue/end/" + getSpecialistId, (message) => {
+            stompClient.subscribe(endStompEP + getSpecialistId, (message) => {
                 let body = JSON.parse(message.body)
                 setEndedVisit({ affectedVisit: parseInt(body.id) });
             });
@@ -164,7 +166,7 @@ function Customer(props) {
     const fetchVisit = async () => {
         dispatch({
             type: "updateVisit",
-            payload: await GETRequest("/visit", cookies.customer)
+            payload: await GETRequest(singleVisitEP, cookies.customer)
                 .then(response => {
                     if (response.status === 200) {
                         return response;
@@ -176,7 +178,7 @@ function Customer(props) {
     const fetchVisits = async () => {
         dispatch({
             type: "updateVisits",
-            payload: await GETRequest("/visit/all", cookies.customer)
+            payload: await GETRequest(multipleVisitsEP, cookies.customer)
                 .then(response => {
                     if (response.status === 200) {
                         return response;
@@ -246,7 +248,7 @@ function Customer(props) {
                                             </Col>
                                             <Col>
                                                 <Button color="danger" onClick={() => {
-                                                    state.stomp.send("/app/cancel/" + getSpecialistId, {}, state.visit.id);
+                                                    state.stomp.send(cancelActionEP + getSpecialistId, {}, state.visit.id);
                                                 }}>Yes, cancel!</Button>
                                             </Col>
                                         </Row>

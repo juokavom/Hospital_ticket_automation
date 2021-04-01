@@ -2,7 +2,10 @@ import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import { baseUrl } from '../shared/baseUrl';
+import { 
+    baseUrl, cancelActionEP, cancelStompEP, startStompEP, endStompEP, addStompEP, 
+    endActionEP, startActionEP, specialistVisitsEP
+ } from '../shared/APIEndpoints';
 import { useAlert } from 'react-alert';
 import {
     Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Table
@@ -74,7 +77,7 @@ function VisitTable(props) {
                         <th scope="row">{vis.code}</th>
                         <td>{vis.time}</td>
                         <td>{vis.status}</td>
-                        <td><Button outline onClick={() => props.stomp.send("/app/cancel/" + props.specialist.id, {}, vis.id)}>Cancel</Button></td>
+                        <td><Button outline onClick={() => props.stomp.send(cancelActionEP + props.specialist.id, {}, vis.id)}>Cancel</Button></td>
                     </tr>
                 );
             });
@@ -151,20 +154,20 @@ function Specialist(props) {
         let stompClient = Stomp.over(sock);
 
         stompClient.connect({ 'Authorization': cookies.specialist }, () => {
-            stompClient.subscribe("/queue/cancel/" + getSpecialist.id, (message) => {
+            stompClient.subscribe(cancelStompEP + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
                 setCancelledVisit({ id: parseInt(body.visit), affectedVisits: body.affectedVisits });
             });
-            stompClient.subscribe("/queue/start/" + getSpecialist.id, (message) => {
+            stompClient.subscribe(startStompEP + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
                 dispatch({ type: "startVisit", payload: parseInt(body.id) });
             });
-            stompClient.subscribe("/queue/end/" + getSpecialist.id, (message) => {
+            stompClient.subscribe(endStompEP + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
                 dispatch({ type: "endVisit", payload: parseInt(body.id) });
                 dispatch({ type: "cancelVisit", payload: parseInt(body.id) });
             });
-            stompClient.subscribe("/queue/add/" + getSpecialist.id, (message) => {
+            stompClient.subscribe(addStompEP + getSpecialist.id, (message) => {
                 let body = JSON.parse(message.body)
                 setAddedVisit({ affectedVisit: body });
             });
@@ -177,7 +180,7 @@ function Specialist(props) {
     const fetchVisits = async () => {
         dispatch({
             type: "setVisits",
-            payload: await GETRequest("/visit/specialist", cookies.specialist)
+            payload: await GETRequest(specialistVisitsEP, cookies.specialist)
                 .then(response => {
                     if (response.status === 200) {
                         return response;
@@ -214,7 +217,7 @@ function Specialist(props) {
 
                                 <Row className="mt-4">
                                     <Col>
-                                        <CardText tag="h5">{state.first.status == "DUE" ? "Upcomming" : "Current"} visit: <strong></strong></CardText>
+                                        <CardText tag="h5">{state.first.status === "DUE" ? "Upcomming" : "Current"} visit: <strong></strong></CardText>
                                     </Col>
                                 </Row>
                                 <Row className="mt-3 mr-3 ml-3">
@@ -241,19 +244,19 @@ function Specialist(props) {
                                     <Col>
                                         <Collapse isOpen={state.first.status === "DUE"}>
                                             <Button color="success" onClick={() =>
-                                                state.stomp.send("/app/start/" + getSpecialist.id, {}, state.first.id)}>Start</Button>
+                                                state.stomp.send(startActionEP + getSpecialist.id, {}, state.first.id)}>Start</Button>
                                         </Collapse>
                                     </Col>
                                     <Col>
                                         <Collapse isOpen={state.first.status === "STARTED"}>
                                             <Button color="danger" onClick={() =>
-                                                state.stomp.send("/app/end/" + getSpecialist.id, {}, state.first.id)}>End</Button>
+                                                state.stomp.send(endActionEP + getSpecialist.id, {}, state.first.id)}>End</Button>
                                         </Collapse>
                                     </Col>
                                     <Col>
                                         <Collapse isOpen={state.first.status === "DUE"}>
                                             <Button outline color="secondary" onClick={() =>
-                                                state.stomp.send("/app/cancel/" + getSpecialist.id, {}, state.first.id)}>Cancel</Button>
+                                                state.stomp.send(cancelActionEP + getSpecialist.id, {}, state.first.id)}>Cancel</Button>
                                         </Collapse>
                                     </Col>
                                 </Row>

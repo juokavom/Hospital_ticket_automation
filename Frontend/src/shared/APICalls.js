@@ -1,4 +1,4 @@
-import { baseUrl } from "./baseUrl";
+import { baseUrl, loginEP } from "./APIEndpoints";
 
 export const GET = async (endpoint) => {
     return fetch(baseUrl + endpoint)
@@ -21,7 +21,7 @@ export const GET = async (endpoint) => {
 }
 
 export const login = async (credentials) => {
-    return fetch(baseUrl + '/login', {
+    return fetch(baseUrl + loginEP, {
         method: 'POST',
         body: '',
         headers: {
