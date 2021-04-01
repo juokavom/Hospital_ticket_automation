@@ -2,6 +2,7 @@ package com.hospital.ticket.controller;
 
 import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.model.Specialist;
+import com.hospital.ticket.model.SpecialistWithJWT;
 import com.hospital.ticket.model.Visit;
 import com.hospital.ticket.model.VisitsWithJWT;
 import com.hospital.ticket.repository.SpecialistRepository;
@@ -43,11 +44,11 @@ public class HttpController {
     }
 
     @RequestMapping("/login")
-    public Specialist getSpecialistDetailsAfterLogin(Principal principal, HttpServletResponse response) {
+    public SpecialistWithJWT getSpecialistDetailsAfterLogin(Principal principal, HttpServletResponse response) {
         Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
         if (specialistOpt.isPresent()) {
             response.setStatus(200);
-            return specialistOpt.get();
+            return new SpecialistWithJWT(response.getHeader("Authorization"), specialistOpt.get());
         } else {
             response.setStatus(404);
             return null;

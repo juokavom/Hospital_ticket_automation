@@ -42,11 +42,11 @@ const Menu = (props) => {
             if (response.status !== 200) {
                 throw new Error();
             } else {
-                setCookie('specialist', response.headers.get("Authorization"))
                 return response
             }}).then(response => response.json()).then(response => {     
-                localStorage.setItem('specialist', JSON.stringify(response));
-                unsetCookie('customer')
+                localStorage.setItem('specialist', JSON.stringify(response.specialist));
+                setCookie('specialist', response.token);
+                unsetCookie('customer');
             }).catch((err) => setLoginFailed(true));
         event.preventDefault();
     }
