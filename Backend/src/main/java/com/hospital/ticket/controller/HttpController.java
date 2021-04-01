@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 import java.util.*;
@@ -125,6 +126,12 @@ public class HttpController {
         List<Visit> activeVisits = visitRepository.findAllActiveVisits(specialist.getId());
         response.setStatus(200);
         return activeVisits;
+    }
+
+    @GetMapping("/isInternal")
+    public boolean getIsInternal(HttpServletRequest request, HttpServletResponse response){
+        response.setStatus(200);
+        return request.getRemoteAddr().equals("0:0:0:0:0:0:0:1");
     }
 
 

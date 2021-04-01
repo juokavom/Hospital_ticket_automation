@@ -39,6 +39,7 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()
+                .antMatchers("/isInternal").permitAll()
                 .antMatchers("/specialists").permitAll()
                 .antMatchers("/visit/generate").permitAll()
                 .antMatchers("/visit**").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)

@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import {
-    Row, Col, UncontrolledAlert
+    Row, Col, UncontrolledAlert, Container, Card, CardTitle, CardText, Button
 } from 'reactstrap';
 import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
 
 
-// const publicIp = require('public-ip');
-// (async () => {
-//     console.log('My ip: ', await publicIp.v4()); //For department screens
-// })();
-
-
 const Main = (props) => {
     const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
     const [activeWindow, setWindow] = useState("Main");
+    const [isInternal, setIsInternal] = useState(null);
+
+    const getUserInternalStatus = () => {
+        fetch("http://localhost:8080/isInternal").then(resp => resp.json()).then(ipStatus => setIsInternal(ipStatus));
+    }
 
     useEffect(() => {
         if (cookies.customer !== undefined) {
@@ -27,6 +26,10 @@ const Main = (props) => {
             setWindow("Main")
         }
     }, [cookies.customer, cookies.specialist]);
+
+    useEffect(() => {
+        getUserInternalStatus();
+    }, []);
 
     const checkFirstTimeVisitor = () => {
         let first = cookies.new;
@@ -53,6 +56,22 @@ const Main = (props) => {
         return (
             <div>
                 <Menu />
+                <div>
+                    <Container>
+                        <Row className="mt-5">
+                            <Col sm="12" md={{ size: 8, offset: 2 }} lg={{ size: 6, offset: 3 }}>
+                                <Card body inverse className="text-center" style={{ backgroundColor: '#333', borderColor: '#333' }}>
+                                    <CardTitle tag="h5">You are connected from internal network</CardTitle>
+                                    <Row>
+                                        <Col>
+                                            <Button color="warning"><strong>Open visit displayer</strong></Button>
+                                        </Col>
+                                    </Row>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
+                </div>
                 <div hidden={checkFirstTimeVisitor()}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
