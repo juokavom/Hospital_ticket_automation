@@ -85,15 +85,15 @@ function Customer(props) {
             let startedSomeone = false;
             if (state.visits != null && state.visits.length > 0) {
                 state.visits.map(i => {
-                    if (i.id == startedVisit.affectedVisit) {
-                        i.status = "STARTED"
+                    if (i.id === startedVisit.affectedVisit) {
                         startedSomeone = true
+                        i.status = "STARTED"
                     }
                 });
                 dispatch({ type: "updateVisits", payload: state.visits });
             }
 
-            if (state.visit != null && state.visit.id == startedVisit.affectedVisit) {
+            if (state.visit != null && state.visit.id === startedVisit.affectedVisit) {
                 state.visit.status = "STARTED"
                 alert.show('Your visit was started!', {
                     timeout: 3000,
@@ -114,14 +114,14 @@ function Customer(props) {
             let endedSomeone = false;
             if (state.visits != null && state.visits.length > 0) {
                 endedSomeone = true;
-                if (state.visits.length == 1) dispatch({ type: "updateVisits", payload: null });
+                if (state.visits.length === 1) dispatch({ type: "updateVisits", payload: null });
                 else {
                     var list = state.visits.filter(i => i.id !== endedVisit.affectedVisit);
                     dispatch({ type: "updateVisits", payload: list });
                 }
             }
 
-            if (state.visit != null && state.visit.id == endedVisit.affectedVisit) {
+            if (state.visit != null && state.visit.id === endedVisit.affectedVisit) {
                 state.visit.status = "ENDED"
                 alert.show('Your visit was ended!', {
                     timeout: 3000,
@@ -208,7 +208,7 @@ function Customer(props) {
                                                 <CardText tag="h5">Your visit code: <strong>{state.visit.code}</strong></CardText>
                                             </Col>
                                         </Row>
-                                        <Collapse isOpen={state.visit.status == "CANCELLED"}>
+                                        <Collapse isOpen={state.visit.status === "CANCELLED"}>
                                             <Row className="m-2">
                                                 <Col>
                                                     <CardText>Planned time of the visit
@@ -218,7 +218,7 @@ function Customer(props) {
                                         </Collapse>
                                         <Row className="m-2">
                                             <Col>
-                                                <Collapse isOpen={state.visit.status != "STARTED"}>
+                                                <Collapse isOpen={state.visit.status !== "STARTED"}>
                                                     <Button color="secondary" onClick={() => {
                                                         removeCookie("customer");
                                                         props.setWindow("Main")

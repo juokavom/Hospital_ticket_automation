@@ -16,21 +16,23 @@ const reducer = (state, action) => {
             if (action.payload.length > 1) {
                 const firstElement = action.payload.shift();
                 return { ...state, visits: action.payload, first: firstElement, inited: true }
-            } else if (action.payload.length == 1) {
+            } else if (action.payload.length === 1) {
                 return { ...state, first: action.payload[0], inited: true }
             } else {
                 return { ...state, inited: true }
             }
         case "startVisit":
-            if (state.first != null && state.first.id == action.payload) {
+            if (state.first != null && state.first.id === action.payload) {
                 state.first.status = "STARTED"
                 return { ...state, first: state.first }
             }
+            break;
         case "endVisit":
-            if (state.first != null && state.first.id == action.payload) {
+            if (state.first != null && state.first.id === action.payload) {
                 state.first.status = "ENDED"
                 return { ...state, first: state.first }
             }
+            break;
         case "addVisit":
             if (state.first == null) {
                 return { ...state, first: action.payload }
@@ -42,7 +44,7 @@ const reducer = (state, action) => {
                 return { ...state, visits: list }
             }
         case "cancelVisit":
-            if (state.first != null && state.first.id == action.payload) {
+            if (state.first != null && state.first.id === action.payload) {
                 if (state.visits != null && state.visits.length > 0) {
                     const firstElement = state.visits.shift();
                     return { ...state, visits: state.visits, first: firstElement }
@@ -50,9 +52,10 @@ const reducer = (state, action) => {
                 return { ...state, first: null }
             } else {
                 if (state.visits != null && state.visits.length > 0) {
-                    var list = state.visits.filter(i => i.id != action.payload);
+                    var list = state.visits.filter(i => i.id !== action.payload);
                     return { ...state, visits: list }
                 }
+                break;
             }
         case "updateVisitsAndFirst":
             return { ...state, visits: action.visits, first: action.first }

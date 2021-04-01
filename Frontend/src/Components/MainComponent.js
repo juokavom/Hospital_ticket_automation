@@ -6,7 +6,6 @@ import {
 import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
-import { GETRequest } from '../shared/APICalls';
 
 
 // const publicIp = require('public-ip');
