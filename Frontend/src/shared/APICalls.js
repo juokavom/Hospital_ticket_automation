@@ -31,7 +31,7 @@ export const login = async (credentials) => {
     }).then(response => response);
 }
 
-export const customerGETRequest = async (endpoint, jwt) => {
+export const GETRequest = async (endpoint, jwt) => {
     return fetch(baseUrl + endpoint, {
         method: 'GET',
         headers: {

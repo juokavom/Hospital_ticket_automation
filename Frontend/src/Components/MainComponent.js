@@ -5,6 +5,8 @@ import {
 } from 'reactstrap';
 import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
+import Specialist from './SpecialistComponent';
+import { GETRequest } from '../shared/APICalls';
 
 
 // const publicIp = require('public-ip');
@@ -36,11 +38,19 @@ const Main = (props) => {
     if (activeWindow === "Customer") {
         return (
             <div>
-                <Customer setWindow={(win) => setWindow(win)}/>
+                <Customer setWindow={(win) => setWindow(win)} />
             </div>
         );
     }
-    else if (activeWindow === "Main") {
+    else if (activeWindow === "Specialist") {
+        return (
+            <div>
+                <Specialist setWindow={(win) => setWindow(win)} />
+            </div >
+        );
+    }
+
+    else {
         return (
             <div>
                 <Menu />
@@ -56,11 +66,6 @@ const Main = (props) => {
             </div>
         );
     }
-    else return (
-        <div>
-            <h1>Specialist ;)</h1>
-        </div >
-    );
 
 }
 export default Main;

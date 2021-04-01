@@ -9,7 +9,7 @@ import { useAlert } from 'react-alert';
 import {
     Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Modal, ModalBody, Label
 } from 'reactstrap';
-import { customerGETRequest } from '../shared/APICalls';
+import { GETRequest } from '../shared/APICalls';
 
 
 const reducer = (state, action) => {
@@ -42,7 +42,7 @@ function Customer(props) {
         if (cancelledVisit != null && cancelledVisit.id != null) {
             if (cancelledVisit.id === state.visit.id) {
                 state.visit.status = "CANCELLED"
-                dispatch({ type: "updateVisit", payload: state.visit });                
+                dispatch({ type: "updateVisit", payload: state.visit });
                 dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
                 alert.show('Your visit was cancelled!', {
                     timeout: 3000,
@@ -97,7 +97,7 @@ function Customer(props) {
     const fetchVisit = async () => {
         dispatch({
             type: "updateVisit",
-            payload: await customerGETRequest("/visit", cookies.customer)
+            payload: await GETRequest("/visit", cookies.customer)
                 .then(response => {
                     if (response.status === 200) {
                         return response;
@@ -109,7 +109,7 @@ function Customer(props) {
     const fetchVisits = async () => {
         dispatch({
             type: "updateVisits",
-            payload: await customerGETRequest("/visit/all", cookies.customer)
+            payload: await GETRequest("/visit/all", cookies.customer)
                 .then(response => {
                     if (response.status === 200) {
                         return response;
@@ -170,7 +170,7 @@ function Customer(props) {
                                         </Col>
                                         <Col>
                                             <Button color="danger" onClick={() => {
-                                                state.stomp.send("/app/cancel/" + getSpecialistId, {}, {});
+                                                state.stomp.send("/app/cancel/" + getSpecialistId, {}, state.visit.id);
                                             }}>Yes, cancel!</Button>
                                         </Col>
                                     </Row>

@@ -8,6 +8,8 @@ import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
 import com.hospital.ticket.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +23,8 @@ import static java.time.LocalTime.now;
 public class HttpController {
     private final Logger LOG =
             Logger.getLogger(HttpController.class.getName());
+    @Autowired
+    private SimpMessagingTemplate msgTemplate;
 
     @Autowired
     private SpecialistRepository specialistRepository;
@@ -37,17 +41,20 @@ public class HttpController {
     }
 
     @RequestMapping("/login")
-    public Specialist getSpecialistDetailsAfterLogin(Principal specialist) {
-        List<Specialist> specialists = specialistRepository.findByTitle(specialist.getName());
-        if (specialists.size() > 0) {
-            return specialists.get(0);
+    public Specialist getSpecialistDetailsAfterLogin(Principal principal, HttpServletResponse response) {
+        Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
+        if (specialistOpt.isPresent()) {
+            response.setStatus(200);
+            return specialistOpt.get();
         } else {
+            response.setStatus(404);
             return null;
         }
 
     }
 
     @GetMapping("/visit/generate")
+    @SendTo("/queue/add/{id}")
     public void generateNewVisit(@RequestParam("id") Long id, HttpServletResponse response) {
         Optional<Specialist> specialistOpt = specialistRepository.findById(id);
         Specialist specialist = null;
@@ -72,6 +79,8 @@ public class HttpController {
         newVisit.setCode(newVisit.getCode() + preset + newVisit.getId());
         visitRepository.save(newVisit);
         response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
+        msgTemplate.convertAndSend("/queue/add/" + specialist.getId(), newVisit);
+
     }
 
     @GetMapping("/visit")
@@ -99,6 +108,21 @@ public class HttpController {
             return null;
         }
         List<Visit> activeVisits = visitRepository.findActiveVisitsBefore(visit.getSpecialist().getId(), visit.getId());
+        response.setStatus(200);
+        return activeVisits;
+    }
+
+    @GetMapping("/visit/specialist")
+    public List<Visit> getSpecialistsVisits(Principal principal, HttpServletResponse response){
+        Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
+        Specialist specialist = null;
+        if (specialistOpt.isPresent()) {
+            specialist = specialistOpt.get();
+        } else {
+            response.setStatus(404);
+            return null;
+        }
+        List<Visit> activeVisits = visitRepository.findAllActiveVisits(specialist.getId());
         response.setStatus(200);
         return activeVisits;
     }

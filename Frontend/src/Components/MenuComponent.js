@@ -40,12 +40,14 @@ const Menu = (props) => {
     const handleLogin = (event) => {
         login({ title: inputTitle.title, password: inputPassword.password }).then(response => {
             if (response.status !== 200) {
-                setLoginFailed(true)
+                throw new Error();
             } else {
                 setCookie('specialist', response.headers.get("Authorization"))
+                return response
+            }}).then(response => response.json()).then(response => {     
+                localStorage.setItem('specialist', JSON.stringify(response));
                 unsetCookie('customer')
-            }
-        })
+            }).catch((err) => setLoginFailed(true));
         event.preventDefault();
     }
 

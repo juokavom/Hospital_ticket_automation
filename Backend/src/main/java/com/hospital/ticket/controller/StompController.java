@@ -1,5 +1,6 @@
 package com.hospital.ticket.controller;
 
+import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.constants.VisitStatus;
 import com.hospital.ticket.model.CancelledVisit;
 import com.hospital.ticket.model.Visit;
@@ -36,8 +37,8 @@ public class StompController {
 
     @MessageMapping("/cancel/{id}")
     @SendTo("/queue/cancel/{id}")
-    public CancelledVisit cancelTicket(@Payload String message, Principal customer, Authentication auth, @DestinationVariable Long id) {
-        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(customer.getName()));
+    public CancelledVisit cancelTicket(@Payload String message, Authentication auth, @DestinationVariable Long id) {
+        Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(message));
         Visit visit = null;
         if (visitOpt.isPresent()) {
             visit = visitOpt.get();

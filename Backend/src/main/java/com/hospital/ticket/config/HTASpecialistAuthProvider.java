@@ -34,7 +34,7 @@ public class HTASpecialistAuthProvider implements AuthenticationProvider {
         List<Specialist> specialists = specialistRepository.findByTitle(username);
         if (specialists.size() > 0) {
             if (passwordEncoder.matches(pwd, specialists.get(0).getPassword())) {
-                return new UsernamePasswordAuthenticationToken(username, pwd, null);
+                return new UsernamePasswordAuthenticationToken(specialists.get(0).getId(), pwd, null);
             } else {
                 throw new BadCredentialsException("Invalid password!");
             }
