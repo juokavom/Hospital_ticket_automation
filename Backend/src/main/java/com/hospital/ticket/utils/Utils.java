@@ -2,8 +2,6 @@ package com.hospital.ticket.utils;
 
 import com.hospital.ticket.model.Visit;
 import com.hospital.ticket.repository.VisitRepository;
-import org.apache.juli.logging.Log;
-import org.springframework.util.Assert;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -11,7 +9,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Logger;
 
 public class Utils {
     public static String generateTime(String lastTimeString, int visitTimeInMinutes) {

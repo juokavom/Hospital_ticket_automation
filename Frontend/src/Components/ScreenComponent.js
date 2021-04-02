@@ -1,14 +1,12 @@
-import React, { useState, useEffect, useReducer } from 'react';
-import { useCookies } from 'react-cookie';
+import React, { useEffect, useReducer } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
-    baseUrl, cancelActionEP, cancelStompEP, startStompEP, endStompEP, addStompEP,
-    endActionEP, startActionEP, allActiveVisitsEP, wsEP
+    baseUrl, cancelStompEP, startStompEP, endStompEP, addStompEP,
+    allActiveVisitsEP, wsEP
 } from '../shared/APIEndpoints';
-import { useAlert } from 'react-alert';
 import {
-    Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Table
+    Button, Card, CardTitle, Container, Row, Col
 } from 'reactstrap';
 
 
@@ -36,7 +34,6 @@ const reducer = (state, action) => {
         case "start":
             if (state.due != null && state.due.length > 0) {
                 var node = state.due.filter(i => i.id === action.payload)[0];
-                console.log('node = ', node)
                 var dueList = state.due.length > 1 ? state.due.filter(i => i.id !== action.payload) : null;
                 if (state.active != null) {
                     state.active.push(node)
@@ -47,13 +44,10 @@ const reducer = (state, action) => {
             }
             break;
         case "setVisits":
-            console.log('set visit called, load = ', action.payload)
             var dueList = action.payload.filter(i => i.status === "DUE")
             var activeList = action.payload.filter(i => i.status === "STARTED")
             dueList = dueList.length > 0 ? dueList : null
             activeList = activeList.length > 0 ? activeList : null
-            console.log('due list = ', dueList)
-            console.log('active list = ', activeList)
             return { ...state, due: dueList, active: activeList }
         case "updateStomp":
             return { ...state, stomp: action.payload }
@@ -68,7 +62,6 @@ function Screen(props) {
 
     const registerSTOMP = (jwt) => {
         if (state.stomp == null) {
-            console.log('register STOMP')
             var sock = new SockJS(baseUrl + wsEP);
             let stompClient = Stomp.over(sock);
 
@@ -90,7 +83,7 @@ function Screen(props) {
                     dispatch({ type: "add", payload: body });
                 });
             })
-            // stompClient.debug = null;
+            stompClient.debug = null;
             dispatch({ type: "updateStomp", payload: stompClient });
         }
     }
@@ -130,9 +123,9 @@ function Screen(props) {
                     <Row className="mt-3">
                         <Col>
                             <Card body className="text-center">
-                                <CardTitle tag="h3">Upcomming visits</CardTitle>
+                                <CardTitle tag="h3">Upcomming 5 visits</CardTitle>
                             </Card>
-                            <VisitsList visits={state.due} class="ticketGrey ticket" />
+                            <VisitsList visits={state.due != null ? state.due.length > 5 ? state.due.slice(0, 5) : state.due : null} class="ticketGrey ticket" />
                         </Col>
                         <Col>
                             <Card body className="text-center">
@@ -155,9 +148,7 @@ export default Screen;
 function VisitsList(props) {
     let vList = []
     if (props.visits != null) {
-        console.log('propsai = ', props)
         vList = props.visits.map(vis => {
-            console.log('propsai arejuj, vis = ', vis)
             return (
                 <Row key={vis.id} className="mt-5">
                     <Col xs={{ size: 10, offset: 1 }}>
@@ -170,6 +161,7 @@ function VisitsList(props) {
                 </Row>);
         });
     }
+
     return (
         <div>
             {vList}

@@ -1,10 +1,8 @@
 package com.hospital.ticket.model;
 
 import com.hospital.ticket.constants.VisitStatus;
-import net.bytebuddy.implementation.bind.annotation.Default;
 
 import javax.persistence.*;
-import java.sql.Time;
 
 @Entity
 @Table(name="visit")

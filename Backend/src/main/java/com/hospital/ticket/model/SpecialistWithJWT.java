@@ -1,5 +1,4 @@
 package com.hospital.ticket.model;
-import java.util.List;
 
 public class SpecialistWithJWT {
     private String token;

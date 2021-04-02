@@ -1,7 +1,6 @@
 package com.hospital.ticket.utils;
 
 import com.hospital.ticket.constants.SecretConstants;
-import com.hospital.ticket.constants.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

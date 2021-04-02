@@ -1,8 +1,6 @@
 package com.hospital.ticket.config;
 
-import com.hospital.ticket.controller.StompController;
 import com.hospital.ticket.utils.JWTToken;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -17,7 +15,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 @Configuration
