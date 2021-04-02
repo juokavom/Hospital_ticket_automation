@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import {
     Row, Col, UncontrolledAlert, Container, Card, CardTitle, Collapse, Button
@@ -7,7 +7,9 @@ import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
 import Screen from './ScreenComponent';
-import { baseUrl, internalIP, isInternalEP, allActiveVisitsEP } from '../shared/APIEndpoints';
+import { baseUrl, internalIP, allActiveVisitsEP } from '../shared/APIEndpoints';
+
+const publicIp = require('public-ip');
 
 const reducer = (state, action) => {
     switch (action.type) {
@@ -15,30 +17,35 @@ const reducer = (state, action) => {
             return { ...state, allVisits: action.payload.allVisits, token: action.payload.token, activeWindow: "Screen" }
         case "setWindow":
             return { ...state, activeWindow: action.payload }
+        case "setNew":
+            return { ...state, newVisitor: true }
+        case "setIP":
+            return { ...state, ip: action.payload }
         default: return;
     }
 }
 
 const Main = (props) => {
     const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
-    // const [activeWindow, setWindow] = useState("Main");
-    const [ipAddress, setIpAddress] = useState(null);
-    const [isNew, setIsNew] = useState(null);
-    const [state, dispatch] = useReducer(reducer, { allVisits: null, token: null, activeWindow: "Main" });
+    const [state, dispatch] = useReducer(reducer, {
+        allVisits: null, token: null, activeWindow: "Main", newVisitor: false, ip: null
+    });
 
-    // const getUserInternalStatus = () => {
-    // (async () => {
-    //     setIpAddress(await publicIp.v4());
-    // })();
-    // }
-
-    // const checkFirstTimeVisitor = () => {
-    //     if(cookies.new === undefined) setIsNew(true)
-    //     else setIsNew(false)
-    //     setCookie('new', true)
-    // }
+    const getUserIp = () => {
+        (async () => {
+            dispatch({ type: "setIP", payload: await publicIp.v4() });
+        })();
+    }
 
     useEffect(() => {
+        getUserIp();
+    }, [state.activeWindow]);
+
+    useEffect(() => {
+        if (cookies.new === undefined) {
+            dispatch({ type: "setNew" });
+            setCookie('new', true)
+        }
         if (cookies.customer !== undefined) {
             dispatch({ type: "setWindow", payload: "Customer" });
         } else if (cookies.specialist !== undefined) {
@@ -47,11 +54,6 @@ const Main = (props) => {
             dispatch({ type: "setWindow", payload: "Main" });
         }
     }, []);
-
-    // useEffect(() => {
-    //     getUserInternalStatus();
-    //     checkFirstTimeVisitor();
-    // }, []);
 
     const getAllVisits = () => {
         fetch(baseUrl + allActiveVisitsEP)
@@ -62,7 +64,6 @@ const Main = (props) => {
             })
             .then(response => response.json())
             .then(response => {
-                // registerSTOMP(response.token);
                 dispatch({ type: "department", payload: response });
             })
     }
@@ -89,13 +90,12 @@ const Main = (props) => {
         );
     }
 
-
     else {
         return (
             <div>
-                <Menu setWindow={(win) => dispatch({ type: "setWindow", payload: win })}/>
+                <Menu setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
                 <div>
-                    <Collapse isOpen={true}>
+                    <Collapse isOpen={state.ip != null && state.ip === internalIP}>
                         <Container>
                             <Row className="mt-5">
                                 <Col sm="12" md={{ size: 8, offset: 2 }} lg={{ size: 6, offset: 3 }}>
@@ -112,7 +112,7 @@ const Main = (props) => {
                         </Container>
                     </Collapse>
                 </div>
-                {/* <Collapse isOpen={isNew}>
+                <Collapse isOpen={state.newVisitor}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
                             <UncontrolledAlert color="secondary text-center">
@@ -120,7 +120,7 @@ const Main = (props) => {
                             </UncontrolledAlert>
                         </Col>
                     </Row>
-                </Collapse> */}
+                </Collapse>
             </div>
         );
     }

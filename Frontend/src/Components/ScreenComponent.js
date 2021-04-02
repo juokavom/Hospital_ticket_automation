@@ -2,8 +2,7 @@ import React, { useEffect, useReducer } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
-    baseUrl, cancelStompEP, startStompEP, endStompEP, addStompEP,
-    allActiveVisitsEP, wsEP
+    baseUrl, cancelStompEP, startStompEP, endStompEP, addStompEP, wsEP
 } from '../shared/APIEndpoints';
 import {
     Button, Card, CardTitle, Container, Row, Col
@@ -87,22 +86,6 @@ function Screen(props) {
             dispatch({ type: "updateStomp", payload: stompClient });
         }
     }
-
-
-    // const fetchVisits = async () => {
-    //     fetch(baseUrl + allActiveVisitsEP)
-    //         .then(response => {
-    //             if (response.status === 200) {
-    //                 return response;
-    //             }
-    //         })
-    //         .then(response => response.json())
-    //         .then(response => {
-    //             registerSTOMP(response.token);
-    //             dispatch({ type: "setVisits", payload: response.allVisits });
-    //         })
-
-    // }
 
     useEffect(() => {        
         dispatch({ type: "setVisits", payload: props.visits });
