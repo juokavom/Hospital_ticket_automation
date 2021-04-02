@@ -217,7 +217,7 @@ function Specialist(props) {
 
                                 <Row className="mt-4">
                                     <Col>
-                                        <CardText tag="h5">{state.first.status === "DUE" ? "Upcomming" : "Current"} visit: <strong></strong></CardText>
+                                        <CardText tag="h5">{state.first.status === "DUE" ? "Upcoming" : "Current"} visit: <strong></strong></CardText>
                                     </Col>
                                 </Row>
                                 <Row className="mt-3 mr-3 ml-3">
@@ -291,7 +291,7 @@ function Specialist(props) {
                             </Row>
                             <Row className="m-2">
                                 <Col>
-                                    <CardText tag="h5">There is no upcomming visits</CardText>
+                                    <CardText tag="h5">There are no upcoming visits</CardText>
                                 </Col>
                             </Row>
                             <Row className="m-2">

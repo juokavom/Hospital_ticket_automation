@@ -107,7 +107,7 @@ function Screen(props) {
                     <Row className="mt-3">
                         <Col>
                             <Card body className="text-center">
-                                <CardTitle tag="h3">Upcomming 5 visits</CardTitle>
+                                <CardTitle tag="h3">Upcoming 5 visits</CardTitle>
                             </Card>
                             <VisitsList visits={state.due != null ? state.due.length > 5 ? state.due.slice(0, 5) : state.due : null} class="ticketGrey ticket" />
                         </Col>
