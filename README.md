@@ -122,5 +122,7 @@ To run this project locally you will need to:
 ![image](https://user-images.githubusercontent.com/47061836/113450247-2ec14780-9408-11eb-8006-b131afb4fb33.png)
 8. Display customer queue
 ![image](https://user-images.githubusercontent.com/47061836/113450297-413b8100-9408-11eb-8225-04b5494e46dd.png)
+#### Class diagram
+![image](https://user-images.githubusercontent.com/47061836/113450598-e5252c80-9408-11eb-99c9-746bf1c3d881.png)
 
 Thanks for reading :slightly_smiling_face:	
