@@ -60,12 +60,12 @@ function Screen(props) {
     const [state, dispatch] = useReducer(reducer, { due: null, active: null, stomp: null });
 
 
-    const registerSTOMP = (jwt) => {
+    const registerSTOMP = () => {
         if (state.stomp == null) {
             var sock = new SockJS(baseUrl + wsEP);
             let stompClient = Stomp.over(sock);
 
-            stompClient.connect({ 'Authorization': jwt }, () => {
+            stompClient.connect({ 'Authorization': props.token }, () => {
                 stompClient.subscribe(cancelStompEP, (message) => {
                     let body = JSON.parse(message.body)
                     dispatch({ type: "cancel", payload: parseInt(body) });
@@ -89,23 +89,24 @@ function Screen(props) {
     }
 
 
-    const fetchVisits = async () => {
-        fetch(baseUrl + allActiveVisitsEP)
-            .then(response => {
-                if (response.status === 200) {
-                    return response;
-                }
-            })
-            .then(response => response.json())
-            .then(response => {
-                registerSTOMP(response.token);
-                dispatch({ type: "setVisits", payload: response.allVisits });
-            })
+    // const fetchVisits = async () => {
+    //     fetch(baseUrl + allActiveVisitsEP)
+    //         .then(response => {
+    //             if (response.status === 200) {
+    //                 return response;
+    //             }
+    //         })
+    //         .then(response => response.json())
+    //         .then(response => {
+    //             registerSTOMP(response.token);
+    //             dispatch({ type: "setVisits", payload: response.allVisits });
+    //         })
 
-    }
+    // }
 
-    useEffect(() => {
-        fetchVisits()
+    useEffect(() => {        
+        dispatch({ type: "setVisits", payload: props.visits });
+        registerSTOMP()
     }, [])
 
     if (state != null) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import {
     Row, Col, UncontrolledAlert, Container, Card, CardTitle, Collapse, Button
@@ -7,69 +7,95 @@ import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
 import Screen from './ScreenComponent';
-import { baseUrl, isInternalEP } from '../shared/APIEndpoints';
+import { baseUrl, internalIP, isInternalEP, allActiveVisitsEP } from '../shared/APIEndpoints';
 
+const reducer = (state, action) => {
+    switch (action.type) {
+        case "department":
+            return { ...state, allVisits: action.payload.allVisits, token: action.payload.token, activeWindow: "Screen" }
+        case "setWindow":
+            return { ...state, activeWindow: action.payload }
+        default: return;
+    }
+}
 
 const Main = (props) => {
     const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
-    const [activeWindow, setWindow] = useState("Main");
-    const [isInternal, setIsInternal] = useState(null);
+    // const [activeWindow, setWindow] = useState("Main");
+    const [ipAddress, setIpAddress] = useState(null);
     const [isNew, setIsNew] = useState(null);
+    const [state, dispatch] = useReducer(reducer, { allVisits: null, token: null, activeWindow: "Main" });
 
-    const getUserInternalStatus = () => {
-        fetch(baseUrl + isInternalEP).then(resp => resp.json()).then(ipStatus => setIsInternal(ipStatus));
-    }
+    // const getUserInternalStatus = () => {
+    // (async () => {
+    //     setIpAddress(await publicIp.v4());
+    // })();
+    // }
 
-    const checkFirstTimeVisitor = () => {
-        if(cookies.new === undefined) setIsNew(true)
-        else setIsNew(false)
-        setCookie('new', true)
-    }
+    // const checkFirstTimeVisitor = () => {
+    //     if(cookies.new === undefined) setIsNew(true)
+    //     else setIsNew(false)
+    //     setCookie('new', true)
+    // }
 
     useEffect(() => {
         if (cookies.customer !== undefined) {
-            setWindow("Customer")
+            dispatch({ type: "setWindow", payload: "Customer" });
         } else if (cookies.specialist !== undefined) {
-            setWindow("Specialist")
+            dispatch({ type: "setWindow", payload: "Specialist" });
         } else {
-            setWindow("Main")
+            dispatch({ type: "setWindow", payload: "Main" });
         }
-    }, [cookies.customer, cookies.specialist]);
-
-    useEffect(() => {
-        getUserInternalStatus();
-        checkFirstTimeVisitor();
     }, []);
 
+    // useEffect(() => {
+    //     getUserInternalStatus();
+    //     checkFirstTimeVisitor();
+    // }, []);
 
-    if (activeWindow === "Customer") {
+    const getAllVisits = () => {
+        fetch(baseUrl + allActiveVisitsEP)
+            .then(response => {
+                if (response.status === 200) {
+                    return response;
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                // registerSTOMP(response.token);
+                dispatch({ type: "department", payload: response });
+            })
+    }
+
+    if (state.activeWindow === "Customer") {
         return (
             <div>
-                <Customer setWindow={(win) => setWindow(win)} />
+                <Customer setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
             </div>
         );
     }
-    else if (activeWindow === "Specialist") {
+    else if (state.activeWindow === "Specialist") {
         return (
             <div>
-                <Specialist setWindow={(win) => setWindow(win)} />
+                <Specialist setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
             </div >
         );
     }
-    else if (activeWindow === "Screen") {
+    else if (state.activeWindow === "Screen") {
         return (
             <div>
-                <Screen setWindow={(win) => setWindow(win)} />
+                <Screen visits={state.allVisits} token={state.token} setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
             </div >
         );
     }
+
 
     else {
         return (
             <div>
-                <Menu />
+                <Menu setWindow={(win) => dispatch({ type: "setWindow", payload: win })}/>
                 <div>
-                    <Collapse isOpen={isInternal}>
+                    <Collapse isOpen={true}>
                         <Container>
                             <Row className="mt-5">
                                 <Col sm="12" md={{ size: 8, offset: 2 }} lg={{ size: 6, offset: 3 }}>
@@ -77,7 +103,7 @@ const Main = (props) => {
                                         <CardTitle tag="h5">You are connected from internal network</CardTitle>
                                         <Row>
                                             <Col>
-                                                <Button color="warning" onClick={() => { setWindow("Screen") }}><strong>Open department screen</strong></Button>
+                                                <Button color="warning" onClick={() => getAllVisits()}><strong>Open department screen</strong></Button>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -86,7 +112,7 @@ const Main = (props) => {
                         </Container>
                     </Collapse>
                 </div>
-                <Collapse isOpen={isNew}>
+                {/* <Collapse isOpen={isNew}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
                             <UncontrolledAlert color="secondary text-center">
@@ -94,7 +120,7 @@ const Main = (props) => {
                             </UncontrolledAlert>
                         </Col>
                     </Row>
-                </Collapse>
+                </Collapse> */}
             </div>
         );
     }

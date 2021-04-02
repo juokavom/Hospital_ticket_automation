@@ -14,7 +14,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 import java.util.Collections;
@@ -136,12 +135,4 @@ public class HttpController {
         return new VisitsWithJWT(JWTToken.generate(SecurityConstants.SCREEN, SecurityConstants.SCREEN),
                 visitRepository.findAllActiveVisits());
     }
-
-    @GetMapping("/isInternal")
-    public boolean getIsInternal(HttpServletRequest request, HttpServletResponse response){
-        response.setStatus(200);
-        return request.getRemoteAddr().equals(SecurityConstants.INTERNAL_IP);
-    }
-
-
 }

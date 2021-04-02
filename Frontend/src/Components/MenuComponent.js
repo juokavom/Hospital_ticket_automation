@@ -33,6 +33,7 @@ const Menu = (props) => {
                     localStorage.setItem('specialist', JSON.stringify(selectedSpecialist));
                     setCookie('customer', response.headers.get("Authorization"));
                     unsetCookie('specialist')
+                    props.setWindow("Customer")
                 }
             })
     }
@@ -47,6 +48,7 @@ const Menu = (props) => {
                 localStorage.setItem('specialist', JSON.stringify(response.specialist));
                 setCookie('specialist', response.token);
                 unsetCookie('customer');
+                props.setWindow("Specialist")
             }).catch((err) => setLoginFailed(true));
         event.preventDefault();
     }

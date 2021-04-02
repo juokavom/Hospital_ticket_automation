@@ -1,4 +1,4 @@
-import { baseUrl, loginEP } from "./APIEndpoints";
+import { baseUrl, loginEP, allActiveVisitsEP } from "./APIEndpoints";
 
 export const GET = async (endpoint) => {
     return fetch(baseUrl + endpoint)

@@ -265,7 +265,7 @@ function Specialist(props) {
                                         <Button color="link" onClick={() => {
                                             dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
                                             removeCookie("specialist");
-                                            props.setWindow("Main")
+                                            props.setWindow("Main");
                                         }}>Logout</Button>
                                     </Col>
                                 </Row>
@@ -299,7 +299,7 @@ function Specialist(props) {
                                     <Button color="link" onClick={() => {
                                         dispatch({ type: "updateStomp", payload: state.stomp.disconnect() });
                                         removeCookie("specialist");
-                                        props.setWindow("Main")
+                                        props.setWindow("Main");
                                     }}>Logout</Button>
                                 </Col>
                             </Row>
