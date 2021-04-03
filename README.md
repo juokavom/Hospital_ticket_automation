@@ -73,12 +73,19 @@ Here you have one of two options from whom to choose:
     **How to connect to hospital VPN:**
     1. Go to [VPN](https://ec2-18-168-30-143.eu-west-2.compute.amazonaws.com/?src=connect) address: `https://ec2-18-168-30-143.eu-west-2.compute.amazonaws.com/?src=connect`
     2. Login by providing VPN credentials. (Unfortunately I cannot provide these details to the general public. If you want to test this feature, please contact me directly at: `j.akramas@gmail.com`)
+    
     ![image](https://user-images.githubusercontent.com/47061836/113443411-9bcde080-93fa-11eb-9eae-28cce3d6c648.png)
+    
     3. Download and install VPN application depending on your system
+    
     ![image](https://user-images.githubusercontent.com/47061836/113443928-8b6a3580-93fb-11eb-9c03-7e4bea077481.png)
+    
     4. Connect to VPN using installed OpenVPN application. You will need to provide login credentials once again. 
+    
     ![image](https://user-images.githubusercontent.com/47061836/113444558-cae55180-93fc-11eb-83f1-3f08bd9a6495.png)
+    
     5. Check your IP. Success!
+    
     ![image](https://user-images.githubusercontent.com/47061836/113444609-e2243f00-93fc-11eb-8f3d-62debb76a65b.png)
 
     Once you are connected to VPN you will see new card in the main page confirming that you are connected to hospital VPN:
@@ -107,25 +114,45 @@ To run this project locally you will need to:
 ![image](https://user-images.githubusercontent.com/47061836/113449715-2288ba80-9407-11eb-9842-3a83669cfb9f.png)
 #### Activity diagrams
 1. Generate ticket
+
 ![image](https://user-images.githubusercontent.com/47061836/113449889-7abfbc80-9407-11eb-8cce-d8133fa14c8a.png)
+
 2. View customer queue
+
 ![image](https://user-images.githubusercontent.com/47061836/113450046-cb371a00-9407-11eb-9bff-67fccd6382d8.png)
+
 3. Cancel visit
+
 ![image](https://user-images.githubusercontent.com/47061836/113450092-e4d86180-9407-11eb-84c7-8ca960444f79.png)
+
 4. Login
+
 ![image](https://user-images.githubusercontent.com/47061836/113450142-fc174f00-9407-11eb-869a-c45356b3ff5d.png)
+
 5. Mange customer queue
+
 ![image](https://user-images.githubusercontent.com/47061836/113450184-10f3e280-9408-11eb-898e-81f5f740abe3.png)
+
 6. Start Visit
+
 ![image](https://user-images.githubusercontent.com/47061836/113450217-1f41fe80-9408-11eb-9dcd-d7228677a789.png)
+
 7. End Visit
+
 ![image](https://user-images.githubusercontent.com/47061836/113450247-2ec14780-9408-11eb-8006-b131afb4fb33.png)
+
 8. Display customer queue
+
 ![image](https://user-images.githubusercontent.com/47061836/113450297-413b8100-9408-11eb-8225-04b5494e46dd.png)
+
 #### Class diagram
+
 ![image](https://user-images.githubusercontent.com/47061836/113450598-e5252c80-9408-11eb-99c9-746bf1c3d881.png)
+
 #### State machine diagram
+
 Visit state machine diagram
+
 ![image](https://user-images.githubusercontent.com/47061836/113490000-292f3480-94d0-11eb-8e25-8a8e910e95ba.png)
 
 Thanks for reading :slightly_smiling_face:	
