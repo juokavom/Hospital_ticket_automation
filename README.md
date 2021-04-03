@@ -125,6 +125,7 @@ To run this project locally you will need to:
 #### Class diagram
 ![image](https://user-images.githubusercontent.com/47061836/113450598-e5252c80-9408-11eb-99c9-746bf1c3d881.png)
 #### State machine diagram
+Visit state machine diagram
 ![image](https://user-images.githubusercontent.com/47061836/113490000-292f3480-94d0-11eb-8e25-8a8e910e95ba.png)
 
 Thanks for reading :slightly_smiling_face:	
