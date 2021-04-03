@@ -27,6 +27,7 @@ Here you have one of two options from whom to choose:
 2. Customer queue window
     When you generate a ticket you will be redirected to this window. In this window you will see your visit's details and customer queue before you.
     ![image](https://user-images.githubusercontent.com/47061836/113437936-3ecd2d00-93f0-11eb-913e-8e016c031f73.png)
+    
     __Your visit time is generated automatically by backend and will depend on the last due (for this specialist) visit time and specialist's default visit time (this is set by administrator in database for every specialist).__
     In this view you have the ability to cancel the visit and see queue in real time. For example, `DENT-070` cancelled their visit, so you and other customers that are after aforementioned visit will receive new time and an alert of the action. 
     ![image](https://user-images.githubusercontent.com/47061836/113437978-54425700-93f0-11eb-9e77-9ee1243ebd33.png)
@@ -46,6 +47,7 @@ Here you have one of two options from whom to choose:
     ![image](https://user-images.githubusercontent.com/47061836/113439030-6a511700-93f2-11eb-8fed-a598ad870141.png)
         - if you (as customer) want to cancel your visit, you will be presented withe following confirmation modal:
     ![image](https://user-images.githubusercontent.com/47061836/113439008-61604580-93f2-11eb-96f2-cff683e38a82.png)
+    
     After visit was ended or cancelled you can go back to main page. 
     
 3. Specialist window
