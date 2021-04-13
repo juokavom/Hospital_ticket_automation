@@ -53,6 +53,7 @@ public class StompController {
     @MessageMapping("/start/{id}")
     @SendTo("/queue/start/{id}")
     public Visit startTicket(@Payload String message, Authentication auth, @DestinationVariable Long id) {
+        if(visitRepository.getSpecStartedVisitCount(id) != 0) return null; //Proceed if there are no started visits
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(message));
         Visit visit = null;
         if (visitOpt.isPresent()) {

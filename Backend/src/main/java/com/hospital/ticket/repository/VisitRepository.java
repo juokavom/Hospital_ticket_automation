@@ -23,4 +23,8 @@ public interface VisitRepository extends CrudRepository<Visit, Long> {
 
     @Query(value = "SELECT * FROM visit WHERE (status = 'DUE' OR  status = 'STARTED') ORDER BY id ASC", nativeQuery = true)
     List<Visit> findAllActiveVisits();
+
+    @Query(value = "SELECT COUNT(id) FROM visit WHERE status = 'STARTED' AND fk_specialist = ?1", nativeQuery = true)
+    int getSpecStartedVisitCount(Long specialistId);
 }
+
