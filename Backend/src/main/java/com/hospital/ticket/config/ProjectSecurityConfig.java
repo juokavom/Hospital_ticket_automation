@@ -3,6 +3,7 @@ package com.hospital.ticket.config;
 import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.filter.JWTTokenGeneratorFilter;
 import com.hospital.ticket.filter.JWTTokenValidatorFilter;
+import com.hospital.ticket.utils.JWTToken;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,10 +12,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -39,7 +42,9 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/visits").permitAll()
+                //This endpoint should allow request only from internal hospital network (issue #3)
+                .antMatchers("/department/token").permitAll()
+                .antMatchers("/department/visits").hasAuthority(SecurityConstants.SCREEN)
                 .antMatchers("/specialists").permitAll()
                 .antMatchers("/visit/generate").permitAll()
                 .antMatchers("/visit**").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)

@@ -2,61 +2,36 @@ import React, { useEffect, useReducer } from 'react';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
-    baseUrl, cancelStompEP, startStompEP, endStompEP, addStompEP, wsEP
+    baseUrl, cancelStompEP, startStompEP, endStompEP,
+    addStompEP, wsEP, allActiveVisitsEP, departmentTokenEP
 } from '../shared/APIEndpoints';
 import {
     Button, Card, CardTitle, Container, Row, Col
 } from 'reactstrap';
+import { GETRequest } from '../shared/APICalls';
 
 
 const reducer = (state, action) => {
     switch (action.type) {
-        case "cancel":
-            if (state.due != null && state.due.length > 0) {
-                var list = state.due.filter(i => i.id !== action.payload);
-                return { ...state, due: list }
-            }
-            break;
-        case "add":
-            if (state.due != null) {
-                state.due.push(action.payload)
-                return { ...state, due: state.due }
-            } else {
-                return { ...state, due: [action.payload] }
-            }
-        case "end":
-            if (state.active != null && state.active.length > 0) {
-                var list = state.active.length > 1 ? state.active.filter(i => i.id !== action.payload) : null;
-                return { ...state, active: list }
-            }
-            break;
-        case "start":
-            if (state.due != null && state.due.length > 0) {
-                var node = state.due.filter(i => i.id === action.payload)[0];
-                var dueList = state.due.length > 1 ? state.due.filter(i => i.id !== action.payload) : null;
-                if (state.active != null) {
-                    state.active.push(node)
-                    return { ...state, due: dueList, active: state.active }
-                } else {
-                    return { ...state, due: dueList, active: [node] }
-                }
-            }
-            break;
         case "setVisits":
-            var dueList = action.payload.filter(i => i.status === "DUE")
-            var activeList = action.payload.filter(i => i.status === "STARTED")
+            var dueList = action.payload.dueVisits
+            var activeList = action.payload.startedVisits
             dueList = dueList.length > 0 ? dueList : null
             activeList = activeList.length > 0 ? activeList : null
             return { ...state, due: dueList, active: activeList }
         case "updateStomp":
             return { ...state, stomp: action.payload }
+        case "setToken":
+            return { ...state, token: action.payload }
         default: return;
     }
 }
 
 
 function Screen(props) {
-    const [state, dispatch] = useReducer(reducer, { due: null, active: null, stomp: null });
+    const [state, dispatch] = useReducer(reducer, {
+        due: null, active: null, stomp: null, token: null
+    });
 
 
     const registerSTOMP = () => {
@@ -64,22 +39,22 @@ function Screen(props) {
             var sock = new SockJS(baseUrl + wsEP);
             let stompClient = Stomp.over(sock);
 
-            stompClient.connect({ 'Authorization': props.token }, () => {
-                stompClient.subscribe(cancelStompEP, (message) => {
-                    let body = JSON.parse(message.body)
-                    dispatch({ type: "cancel", payload: parseInt(body) });
+            stompClient.connect({ 'Authorization': state.token }, () => {
+                stompClient.subscribe(cancelStompEP, () => {
+                    //Refresh visits if any one was cancelled
+                    getVisits();
                 });
-                stompClient.subscribe(startStompEP, (message) => {
-                    let body = JSON.parse(message.body)
-                    dispatch({ type: "start", payload: parseInt(body) });
+                stompClient.subscribe(startStompEP, () => {
+                    //Refresh visits if any one was started
+                    getVisits();
                 });
-                stompClient.subscribe(endStompEP, (message) => {
-                    let body = JSON.parse(message.body)
-                    dispatch({ type: "end", payload: parseInt(body) });
+                stompClient.subscribe(endStompEP, () => {
+                    //Refresh visits if any one was ended
+                    getVisits();
                 });
-                stompClient.subscribe(addStompEP, (message) => {
-                    let body = JSON.parse(message.body)
-                    dispatch({ type: "add", payload: body });
+                stompClient.subscribe(addStompEP, () => {
+                    //Refresh visits if any one was added
+                    getVisits();
                 });
             })
             stompClient.debug = null;
@@ -87,9 +62,40 @@ function Screen(props) {
         }
     }
 
-    useEffect(() => {        
-        dispatch({ type: "setVisits", payload: props.visits });
-        registerSTOMP()
+    const getToken = () => {
+        fetch(baseUrl + departmentTokenEP)
+            .then(response => {
+                if (response.status === 200) {
+                    return response;
+                }
+            })
+            .then(response => response.text())
+            .then(response => {
+                dispatch({ type: "setToken", payload: response });
+            })
+    }
+
+    const getVisits = async () => {
+        dispatch({
+            type: "setVisits",
+            payload: await GETRequest(allActiveVisitsEP, state.token)
+                .then(response => {
+                    if (response.status === 200) {
+                        return response;
+                    }
+                })
+                .then(response => response.json())
+        });
+    }
+    useEffect(() => {
+        if (state.token != null) {
+            getVisits();
+            registerSTOMP();
+        }
+    }, [state.token])
+
+    useEffect(() => {
+        getToken();
     }, [])
 
     if (state != null) {
@@ -109,7 +115,7 @@ function Screen(props) {
                             <Card body className="text-center">
                                 <CardTitle tag="h3">Upcoming 5 visits</CardTitle>
                             </Card>
-                            <VisitsList visits={state.due != null ? state.due.length > 5 ? state.due.slice(0, 5) : state.due : null} class="ticketGrey ticket" />
+                            <VisitsList visits={state.due} class="ticketGrey ticket" />
                         </Col>
                         <Col>
                             <Card body className="text-center">

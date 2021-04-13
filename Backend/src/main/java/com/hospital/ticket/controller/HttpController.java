@@ -4,7 +4,7 @@ import com.hospital.ticket.constants.SecurityConstants;
 import com.hospital.ticket.model.Specialist;
 import com.hospital.ticket.model.SpecialistWithJWT;
 import com.hospital.ticket.model.Visit;
-import com.hospital.ticket.model.VisitsWithJWT;
+import com.hospital.ticket.model.DueAndStartedVisits;
 import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
@@ -129,10 +129,17 @@ public class HttpController {
         return activeVisits;
     }
 
-    @GetMapping("/visits")
-    public VisitsWithJWT getAllVisits( HttpServletResponse response){
+    @GetMapping("/department/token")
+    public @ResponseBody String getDepartmentToken(HttpServletResponse response){
         response.setStatus(200);
-        return new VisitsWithJWT(JWTToken.generate(SecurityConstants.SCREEN, SecurityConstants.SCREEN),
-                visitRepository.findAllActiveVisits());
+        return JWTToken.generate(SecurityConstants.SCREEN, SecurityConstants.SCREEN);
     }
+
+    @GetMapping("/department/visits")
+    public DueAndStartedVisits getDepartmentVisits(HttpServletResponse response){
+        response.setStatus(200);
+        return new DueAndStartedVisits(visitRepository.findDueVisitsWithLimit(5),
+                visitRepository.findAllStartedVisits());
+    }
+
 }

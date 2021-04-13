@@ -7,14 +7,12 @@ import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
 import Screen from './ScreenComponent';
-import { baseUrl, internalIP, allActiveVisitsEP } from '../shared/APIEndpoints';
+import { baseUrl, internalIP, allActiveVisitsEP, departmentTokenEP } from '../shared/APIEndpoints';
 
 const publicIp = require('public-ip');
 
 const reducer = (state, action) => {
     switch (action.type) {
-        case "department":
-            return { ...state, allVisits: action.payload.allVisits, token: action.payload.token, activeWindow: "Screen" }
         case "setWindow":
             return { ...state, activeWindow: action.payload }
         case "setNew":
@@ -28,7 +26,7 @@ const reducer = (state, action) => {
 const Main = (props) => {
     const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
     const [state, dispatch] = useReducer(reducer, {
-        allVisits: null, token: null, activeWindow: "Main", newVisitor: false, ip: null
+        activeWindow: "Main", newVisitor: false, ip: null
     });
 
     const getUserIp = () => {
@@ -55,18 +53,7 @@ const Main = (props) => {
         }
     }, []);
 
-    const getAllVisits = () => {
-        fetch(baseUrl + allActiveVisitsEP)
-            .then(response => {
-                if (response.status === 200) {
-                    return response;
-                }
-            })
-            .then(response => response.json())
-            .then(response => {
-                dispatch({ type: "department", payload: response });
-            })
-    }
+    
 
     if (state.activeWindow === "Customer") {
         return (
@@ -85,7 +72,7 @@ const Main = (props) => {
     else if (state.activeWindow === "Screen") {
         return (
             <div>
-                <Screen visits={state.allVisits} token={state.token} setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
+                <Screen setWindow={(win) => dispatch({ type: "setWindow", payload: win })} />
             </div >
         );
     }
@@ -103,7 +90,8 @@ const Main = (props) => {
                                         <CardTitle tag="h5">You are connected from internal network</CardTitle>
                                         <Row>
                                             <Col>
-                                                <Button color="warning" onClick={() => getAllVisits()}><strong>Open department screen</strong></Button>
+                                                <Button color="warning" onClick={() => dispatch({ type: "setWindow", payload: "Screen" })}>
+                                                    <strong>Open department screen</strong></Button>
                                             </Col>
                                         </Row>
                                     </Card>
