@@ -42,6 +42,7 @@ public class StompController {
         Visit visit = null;
         if (visitOpt.isPresent()) {
             visit = visitOpt.get();
+            if(visit.getStatus() != VisitStatus.DUE) return null; //Proceed if visit status is DUE
         } else return null;
         visit.setStatus(VisitStatus.CANCELLED);
         List<Visit> activeVisits = Utils.recalculateTime(visitRepository, visit);
@@ -58,6 +59,7 @@ public class StompController {
         Visit visit = null;
         if (visitOpt.isPresent()) {
             visit = visitOpt.get();
+            if(visit.getStatus() != VisitStatus.DUE) return null; //Proceed if visit status is DUE
         } else return null;
         visit.setStatus(VisitStatus.STARTED);
         visitRepository.save(visit);
@@ -72,6 +74,7 @@ public class StompController {
         Visit visit = null;
         if (visitOpt.isPresent()) {
             visit = visitOpt.get();
+            if(visit.getStatus() != VisitStatus.STARTED) return null; //Proceed if visit status is STARTED
         } else return null;
         visit.setStatus(VisitStatus.ENDED);
         visitRepository.save(visit);
