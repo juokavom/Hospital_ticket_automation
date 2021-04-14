@@ -5,10 +5,10 @@ import {
     Modal, ModalHeader, ModalBody, Form, FormGroup, Input, FormFeedback, Collapse, Alert
 } from 'reactstrap';
 import { GET, login } from '../shared/APICalls';
-import { baseUrl, generateTicketEp } from '../shared/APIEndpoints';
+import { baseUrl, generateTicketEp, specialistsListEP } from '../shared/APIEndpoints';
 
 let specialistsList = []
-GET('/specialists').then(resp => specialistsList = resp)
+GET(specialistsListEP).then(resp => specialistsList = resp)
 
 const Menu = (props) => {
     const [dropdownOpen, setOpen] = useState(false);
@@ -26,8 +26,14 @@ const Menu = (props) => {
         );
     });
 
-    const generateTicket = () => {
-        fetch(baseUrl + generateTicketEp + selectedSpecialist.id)
+    const generateTicket = () => { 
+        fetch(baseUrl + generateTicketEp, {
+            method: 'POST',
+            body: selectedSpecialist.id,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
             .then(response => {
                 if (response.status === 200) {
                     localStorage.setItem('specialist', JSON.stringify(selectedSpecialist));

@@ -42,13 +42,16 @@ public class ProjectSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
                 .authorizeRequests()
+                .antMatchers("/specialists").permitAll()
+                .antMatchers("/login").authenticated()
+                .antMatchers("/visit/generate").permitAll()
+                .antMatchers("/visit").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)
+                .antMatchers("/specialist/visits/active").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)
+                .antMatchers("/specialist/visits").hasAuthority(SecurityConstants.SPECIALIST)
                 //This endpoint should allow request only from internal hospital network (issue #3)
                 .antMatchers("/department/token").permitAll()
                 .antMatchers("/department/visits").hasAuthority(SecurityConstants.SCREEN)
-                .antMatchers("/specialists").permitAll()
-                .antMatchers("/visit/generate").permitAll()
-                .antMatchers("/visit**").hasAnyAuthority(SecurityConstants.CUSTOMER, SecurityConstants.SPECIALIST)
-                .antMatchers("/login").authenticated().and().httpBasic();
+                .and().httpBasic();
     }
 
     @Bean

@@ -3,7 +3,7 @@ import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import {
-    baseUrl, wsEP, cancelStompEP, startStompEP, endStompEP, singleVisitEP, multipleVisitsEP, cancelActionEP
+    baseUrl, wsEP, cancelStompEP, startStompEP, endStompEP, singleVisitEP, activeSpecVisitsEP, cancelActionEP
 } from '../shared/APIEndpoints';
 import Timer from './CounterComponent';
 import VisitsList from './VisitsListComponent';
@@ -178,7 +178,7 @@ function Customer(props) {
     const fetchVisits = async () => {
         dispatch({
             type: "updateVisits",
-            payload: await GETRequest(multipleVisitsEP, cookies.customer)
+            payload: await GETRequest(activeSpecVisitsEP, cookies.customer)
                 .then(response => {
                     if (response.status === 200) {
                         return response;

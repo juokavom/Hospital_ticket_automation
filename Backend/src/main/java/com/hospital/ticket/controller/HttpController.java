@@ -42,7 +42,7 @@ public class HttpController {
         return specialists;
     }
 
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public SpecialistWithJWT getSpecialistDetailsAfterLogin(Principal principal, HttpServletResponse response) {
         Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
         if (specialistOpt.isPresent()) {
@@ -52,12 +52,11 @@ public class HttpController {
             response.setStatus(404);
             return null;
         }
-
     }
 
-    @GetMapping("/visit/generate")
+    @PostMapping("/visit/generate")
     @SendTo("/queue/add/{id}")
-    public void generateNewVisit(@RequestParam("id") Long id, HttpServletResponse response) {
+    public void generateNewVisit(@RequestBody Long id, HttpServletResponse response) {
         Optional<Specialist> specialistOpt = specialistRepository.findById(id);
         Specialist specialist = null;
         if (specialistOpt.isPresent()) {
@@ -99,7 +98,7 @@ public class HttpController {
         return visit;
     }
 
-    @GetMapping("/visit/all")
+    @GetMapping("/specialist/visits/active")
     public List<Visit> getVisits(Principal principal, HttpServletResponse response){
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(principal.getName()));
         Visit visit = null;
@@ -114,7 +113,7 @@ public class HttpController {
         return activeVisits;
     }
 
-    @GetMapping("/visit/specialist")
+    @GetMapping("/specialist/visits")
     public List<Visit> getSpecialistsVisits(Principal principal, HttpServletResponse response){
         Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
         Specialist specialist = null;
