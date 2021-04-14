@@ -7,9 +7,11 @@ import Menu from './MenuComponent';
 import Customer from './CustomerComponent';
 import Specialist from './SpecialistComponent';
 import Screen from './ScreenComponent';
-import { baseUrl, internalIP, allActiveVisitsEP, departmentTokenEP } from '../shared/APIEndpoints';
+import { internalIP } from '../shared/APIEndpoints';
 
 const publicIp = require('public-ip');
+const isNew = localStorage.getItem('new') === null;
+if (isNew) localStorage.setItem('new', JSON.stringify(false));
 
 const reducer = (state, action) => {
     switch (action.type) {
@@ -23,8 +25,8 @@ const reducer = (state, action) => {
     }
 }
 
-const Main = (props) => {
-    const [cookies, setCookie] = useCookies(['new', 'customer', 'specialist']);
+const Main = () => {
+    const [cookies,] = useCookies(['customer', 'specialist']);
     const [state, dispatch] = useReducer(reducer, {
         activeWindow: "Main", newVisitor: false, ip: null
     });
@@ -40,10 +42,6 @@ const Main = (props) => {
     }, [state.activeWindow]);
 
     useEffect(() => {
-        if (cookies.new === undefined) {
-            dispatch({ type: "setNew" });
-            setCookie('new', true)
-        }
         if (cookies.customer !== undefined) {
             dispatch({ type: "setWindow", payload: "Customer" });
         } else if (cookies.specialist !== undefined) {
@@ -53,7 +51,7 @@ const Main = (props) => {
         }
     }, []);
 
-    
+
 
     if (state.activeWindow === "Customer") {
         return (
@@ -100,7 +98,7 @@ const Main = (props) => {
                         </Container>
                     </Collapse>
                 </div>
-                <Collapse isOpen={state.newVisitor}>
+                <Collapse isOpen={isNew}>
                     <Row className="mt-5">
                         <Col sm="12" md={{ size: 10, offset: 1 }} lg={{ size: 8, offset: 2 }}>
                             <UncontrolledAlert color="secondary text-center">
