@@ -5,11 +5,11 @@ import {
 
 function VisitsList(props) {
     let vList = []
-    if(props.visits != null){
+    if (props.visits != null) {
         vList = props.visits.map(vis => {
             let color = "ticketGrey"
-            if(vis.id === props.visit.id) color = "ticketBlue";
-            if(vis.status === "STARTED") color = "ticketGreen";
+            if (vis.id === props.visit.id) color = "ticketBlue";
+            if (vis.status === "STARTED") color = "ticketGreen";
             color += " ticket"
             return (
                 <Row key={vis.id} className="mt-5">

@@ -5,7 +5,7 @@ import com.hospital.ticket.constants.VisitStatus;
 import javax.persistence.*;
 
 @Entity
-@Table(name="visit")
+@Table(name = "visit")
 public class Visit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,9 +18,10 @@ public class Visit {
     @JoinColumn(name = "fk_specialist")
     private Specialist specialist;
 
-    public Visit(){}
+    public Visit() {
+    }
 
-    public Visit(String time, Specialist specialist){
+    public Visit(String time, Specialist specialist) {
         setId(null);
         setCode(specialist.getTitle().substring(0, 4) + "-");
         setTime(time);

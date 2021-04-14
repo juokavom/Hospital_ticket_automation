@@ -2,10 +2,10 @@ import React, { useState, useEffect, useReducer } from 'react';
 import { useCookies } from 'react-cookie';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-import { 
-    baseUrl, cancelActionEP, cancelStompEP, startStompEP, endStompEP, addStompEP, 
+import {
+    baseUrl, cancelActionEP, cancelStompEP, startStompEP, endStompEP, addStompEP,
     endActionEP, startActionEP, specialistVisitsEP, wsEP
- } from '../shared/APIEndpoints';
+} from '../shared/APIEndpoints';
 import { useAlert } from 'react-alert';
 import {
     Button, Card, CardTitle, CardText, Container, Row, Col, Collapse, Table

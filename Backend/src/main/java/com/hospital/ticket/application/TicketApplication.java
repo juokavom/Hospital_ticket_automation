@@ -11,12 +11,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 
 @EnableJpaRepositories("com.hospital.ticket.repository")
 @EntityScan("com.hospital.ticket.model")
-@ComponentScans({ @ComponentScan("com.hospital.ticket.controller"), @ComponentScan("com.hospital.ticket.config") })
+@ComponentScans({@ComponentScan("com.hospital.ticket.controller"), @ComponentScan("com.hospital.ticket.config")})
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 @EnableWebSecurity(debug = false)
 public class TicketApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TicketApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TicketApplication.class, args);
+    }
 
 }

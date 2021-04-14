@@ -31,7 +31,7 @@ public class HTASpecialistAuthProvider implements AuthenticationProvider {
             } else {
                 throw new BadCredentialsException("Invalid password!");
             }
-        }else {
+        } else {
             throw new BadCredentialsException("No user registered with this details!");
         }
     }

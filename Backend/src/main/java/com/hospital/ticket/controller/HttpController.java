@@ -1,10 +1,10 @@
 package com.hospital.ticket.controller;
 
 import com.hospital.ticket.constants.SecurityConstants;
+import com.hospital.ticket.model.DueAndStartedVisits;
 import com.hospital.ticket.model.Specialist;
 import com.hospital.ticket.model.SpecialistWithJWT;
 import com.hospital.ticket.model.Visit;
-import com.hospital.ticket.model.DueAndStartedVisits;
 import com.hospital.ticket.repository.SpecialistRepository;
 import com.hospital.ticket.repository.VisitRepository;
 import com.hospital.ticket.utils.JWTToken;
@@ -67,7 +67,7 @@ public class HttpController {
         }
         String lastVisitTime = visitRepository.findLastActiveVisitTime(specialist.getId());
         String visitTime = Utils.generateTime(lastVisitTime, specialist.getTimeForVisit());
-        if(visitTime == null){
+        if (visitTime == null) {
             response.setStatus(500);
             return;
         }
@@ -75,8 +75,8 @@ public class HttpController {
         Visit newVisit = new Visit(visitTime, specialist);
         visitRepository.save(newVisit);
         String preset = "";
-        if(newVisit.getId() < 10) preset = "00";
-        else if(newVisit.getId() < 100) preset = "0";
+        if (newVisit.getId() < 10) preset = "00";
+        else if (newVisit.getId() < 100) preset = "0";
         newVisit.setCode(newVisit.getCode() + preset + newVisit.getId());
         visitRepository.save(newVisit);
         response.setHeader(SecurityConstants.JWT_HEADER, JWTToken.generate(newVisit.getId().toString(), SecurityConstants.CUSTOMER));
@@ -85,7 +85,7 @@ public class HttpController {
     }
 
     @GetMapping("/visit")
-    public Visit getVisit(Principal principal, HttpServletResponse response){
+    public Visit getVisit(Principal principal, HttpServletResponse response) {
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(principal.getName()));
         Visit visit = null;
         if (visitOpt.isPresent()) {
@@ -99,7 +99,7 @@ public class HttpController {
     }
 
     @GetMapping("/specialist/visits/active")
-    public List<Visit> getVisits(Principal principal, HttpServletResponse response){
+    public List<Visit> getVisits(Principal principal, HttpServletResponse response) {
         Optional<Visit> visitOpt = visitRepository.findById(Long.parseLong(principal.getName()));
         Visit visit = null;
         if (visitOpt.isPresent()) {
@@ -114,7 +114,7 @@ public class HttpController {
     }
 
     @GetMapping("/specialist/visits")
-    public List<Visit> getSpecialistsVisits(Principal principal, HttpServletResponse response){
+    public List<Visit> getSpecialistsVisits(Principal principal, HttpServletResponse response) {
         Optional<Specialist> specialistOpt = specialistRepository.findById(Long.parseLong(principal.getName()));
         Specialist specialist = null;
         if (specialistOpt.isPresent()) {
@@ -129,16 +129,16 @@ public class HttpController {
     }
 
     @GetMapping("/department/token")
-    public @ResponseBody String getDepartmentToken(HttpServletResponse response){
+    public @ResponseBody
+    String getDepartmentToken(HttpServletResponse response) {
         response.setStatus(200);
         return JWTToken.generate(SecurityConstants.SCREEN, SecurityConstants.SCREEN);
     }
 
     @GetMapping("/department/visits")
-    public DueAndStartedVisits getDepartmentVisits(HttpServletResponse response){
+    public DueAndStartedVisits getDepartmentVisits(HttpServletResponse response) {
         response.setStatus(200);
         return new DueAndStartedVisits(visitRepository.findDueVisitsWithLimit(5),
                 visitRepository.findAllStartedVisits());
     }
-
 }

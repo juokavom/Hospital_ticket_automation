@@ -34,6 +34,7 @@ public class JWTToken {
         }
         return auth;
     }
+
     public static String generate(String username, String authorities) {
         SecretKey key = Keys.hmacShaKeyFor(SecretConstants.JWT_KEY.getBytes(StandardCharsets.UTF_8));
 

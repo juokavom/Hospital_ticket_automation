@@ -23,7 +23,6 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
 
     private final Logger LOG = Logger.getLogger(StompConfig.class.getName());
 
-
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("ticket")
@@ -37,7 +36,6 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
                 .enableSimpleBroker("/queue/");
     }
 
-
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
@@ -46,18 +44,16 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     Authentication authentication = null;
                     String jwt = accessor.getFirstNativeHeader("Authorization");
-                    if(jwt != null){
+                    if (jwt != null) {
                         authentication = JWTToken.validate(jwt);
                     }
-                    if(authentication == null) {
+                    if (authentication == null) {
                         LOG.info("STOMP endpoint register handler: User doesn't have permissions to pub/sub");
                         return null;
-                    }
-                    else {
+                    } else {
                         accessor.setUser(authentication);
                         LOG.info("STOMP endpoint register handler: User now can pub/sub");
                     }
@@ -66,6 +62,4 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
             }
         });
     }
-
-
 }

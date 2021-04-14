@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 
 @Entity
-@Table(name="specialist")
-public class Specialist implements Comparable{
+@Table(name = "specialist")
+public class Specialist implements Comparable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

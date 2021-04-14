@@ -1,4 +1,5 @@
 package com.hospital.ticket.model;
+
 import java.util.List;
 
 public class CancelledVisit {

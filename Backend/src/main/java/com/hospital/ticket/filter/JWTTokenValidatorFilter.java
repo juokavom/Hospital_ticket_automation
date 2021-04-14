@@ -18,12 +18,14 @@ public class JWTTokenValidatorFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
         String jwt = request.getHeader(SecurityConstants.JWT_HEADER);
         if (null != jwt) {
-                SecurityContextHolder.getContext().setAuthentication(JWTToken.validate(jwt));
+            SecurityContextHolder.getContext().setAuthentication(JWTToken.validate(jwt));
         }
         chain.doFilter(request, response);
     }
 
 
-    @Override protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().equals("/login"); }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return request.getServletPath().equals("/login");
+    }
 }

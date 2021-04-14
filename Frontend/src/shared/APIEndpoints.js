@@ -1,7 +1,5 @@
-// export const baseUrl = 'http://18.168.30.143:8080';
-export const baseUrl = 'http://localhost:8080';
-// export const internalIP = '18.168.30.143';
-export const internalIP = '88.119.6.251';
+export const baseUrl = 'http://18.168.30.143:8080';
+export const internalIP = '18.168.30.143';
 export const loginEP = '/login';
 
 export const wsEP = '/ticket';

@@ -43,18 +43,18 @@ public class Utils {
         return activeVisits;
     }
 
-    public static String recalculateNewTime(String time, int reductionTime){
+    public static String recalculateNewTime(String time, int reductionTime) {
         String[] timeParts = time.split(":", 2);
         int newTime = Integer.parseInt(timeParts[0]) * 60 + Integer.parseInt(timeParts[1]) - reductionTime;
         int hours = newTime / 60;
         int minutes = newTime - hours * 60;
 
-        if(minutes < 0) {
+        if (minutes < 0) {
             minutes += 60;
             hours--;
         }
-        if(hours < 0) hours += 24;
-        return (hours < 10? "0":"") + hours + ":" + (minutes < 10? "0":"") + minutes;
+        if (hours < 0) hours += 24;
+        return (hours < 10 ? "0" : "") + hours + ":" + (minutes < 10 ? "0" : "") + minutes;
     }
 
 }

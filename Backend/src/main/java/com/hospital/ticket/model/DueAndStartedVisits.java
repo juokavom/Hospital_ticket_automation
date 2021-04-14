@@ -1,4 +1,5 @@
 package com.hospital.ticket.model;
+
 import java.util.List;
 
 public class DueAndStartedVisits {
@@ -17,6 +18,7 @@ public class DueAndStartedVisits {
     public void setDueVisits(List<Visit> dueVisits) {
         this.dueVisits = dueVisits;
     }
+
     public List<Visit> getStartedVisits() {
         return startedVisits;
     }

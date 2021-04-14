@@ -17,7 +17,7 @@ const Menu = (props) => {
     const [selectedSpecialist, setSpecialist] = useState({ title: "Select a specialist" });
     const [inputTitle, setInputTitle] = useState({ title: "", valid: false, invalid: false });
     const [inputPassword, setInputPassword] = useState({ password: "", valid: false, invalid: false });
-    const [, setCookie, unsetCookie]= useCookies(['customer', 'specialist']);
+    const [, setCookie, unsetCookie] = useCookies(['customer', 'specialist']);
 
 
     const specialists = specialistsList.map((s) => {
@@ -26,7 +26,7 @@ const Menu = (props) => {
         );
     });
 
-    const generateTicket = () => { 
+    const generateTicket = () => {
         fetch(baseUrl + generateTicketEp, {
             method: 'POST',
             body: selectedSpecialist.id,
@@ -50,12 +50,13 @@ const Menu = (props) => {
                 throw new Error();
             } else {
                 return response
-            }}).then(response => response.json()).then(response => {     
-                localStorage.setItem('specialist', JSON.stringify(response.specialist));
-                setCookie('specialist', response.token);
-                unsetCookie('customer');
-                props.setWindow("Specialist")
-            }).catch((err) => setLoginFailed(true));
+            }
+        }).then(response => response.json()).then(response => {
+            localStorage.setItem('specialist', JSON.stringify(response.specialist));
+            setCookie('specialist', response.token);
+            unsetCookie('customer');
+            props.setWindow("Specialist")
+        }).catch((err) => setLoginFailed(true));
         event.preventDefault();
     }
 
