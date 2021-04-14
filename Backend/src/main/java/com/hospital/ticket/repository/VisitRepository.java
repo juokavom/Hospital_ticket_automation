@@ -29,5 +29,8 @@ public interface VisitRepository extends CrudRepository<Visit, Long> {
 
     @Query(value = "SELECT COUNT(id) FROM visit WHERE status = 'STARTED' AND fk_specialist = ?1", nativeQuery = true)
     int getSpecStartedVisitCount(Long specialistId);
+
+    @Query(value = "SELECT COUNT(visit.id) FROM visit INNER JOIN specialist ON visit.fk_specialist = specialist.id WHERE visit.id = ?1 AND specialist.id = ?2", nativeQuery = true)
+    int getSpecVisitJoinCount(Long visitId, Long specialistId);
 }
 
