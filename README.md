@@ -1,7 +1,7 @@
 # **Hospital ticket automation app**
 ##### by Jokūbas Akramas
 _This is web application for hospital queue management developed with Spring Boot and React.js._
-### How to use  website
+### How to use  website (outdated, live version not hosted anymore)
 The working solution is available [here](http://hospital-app-ticket-bucket.s3-website.eu-west-2.amazonaws.com/) or by pasting link in browser `http://hospital-app-ticket-bucket.s3-website.eu-west-2.amazonaws.com/`. The first time you run website you should see gray box with welcoming message and cookie usage alert. When you load page second time it will be gone.
 1. Main window
 Unless you have an active session as a customer or a specialist this is default screen where the app starts.
